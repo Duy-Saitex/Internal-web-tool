@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Industrial Engineer — Trim Card Color Fill</title>
+<template id="__bundler_thumbnail" data-bg-color="#1c2127">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#1c2127"/>
+    <rect x="380" y="250" width="440" height="300" rx="12" fill="#252a31" stroke="#383e47" stroke-width="4"/>
+    <rect x="420" y="300" width="180" height="26" rx="4" fill="#3a4250"/>
+    <rect x="420" y="350" width="180" height="26" rx="4" fill="#3a4250"/>
+    <rect x="420" y="400" width="180" height="26" rx="4" fill="#3a4250"/>
+    <rect x="640" y="300" width="140" height="26" rx="4" fill="#e1ff7f"/>
+    <rect x="640" y="350" width="140" height="26" rx="4" fill="#ff8448"/>
+    <rect x="640" y="400" width="140" height="26" rx="4" fill="#2d72d2"/>
+  </svg>
+</template>
+<style>
+  :root{
+    --bg:#1c2127; --surface:#252a31; --surface-2:#2f343c; --surface-3:#383e47; --inset:#15181d;
+    --line:rgba(255,255,255,0.09); --line-2:rgba(255,255,255,0.06); --line-strong:rgba(255,255,255,0.16);
+    --txt:#f6f7f9; --mut:#abb3bf; --mut-2:#8f99a8; --faint:#738091;
+    --blue:#2d72d2; --blue-2:#215db0; --blue-hi:#8abbff; --blue-4:#4c90f0;
+    --green:#238551; --green-hi:#72ca9b;
+    --orange:#c87619; --orange-hi:#fbb360;
+    --red:#cd4246; --red-hi:#fa999c;
+    --turquoise:#16b8aa;
+    --r-sm:2px; --r:4px; --r-lg:6px;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Open Sans","Helvetica Neue",sans-serif;
+    --mono:ui-monospace,"SF Mono","Menlo","Consolas","Liberation Mono",monospace;
+    --ease:cubic-bezier(0.4,1,0.75,0.9); --t:120ms;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:14px;line-height:1.286;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  ::selection{background:rgba(138,187,255,0.32)}
+  a{color:var(--blue-hi);text-decoration:none}
+  a:hover{color:#a9ceff;text-decoration:underline}
+  *::-webkit-scrollbar{width:11px;height:11px}
+  *::-webkit-scrollbar-track{background:transparent}
+  *::-webkit-scrollbar-thumb{background:#3a414c;border-radius:6px;border:3px solid transparent;background-clip:content-box}
+  *::-webkit-scrollbar-thumb:hover{background:#4a525e;background-clip:content-box}
+  .ic{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none}
+  .ic svg{width:100%;height:100%;fill:currentColor}
+
+  .navbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;height:50px;padding:0 18px;background:var(--surface);box-shadow:0 1px 0 var(--line),0 1px 12px rgba(0,0,0,0.25)}
+  .nav-home{display:flex;align-items:center;gap:10px;min-width:0;text-decoration:none;color:inherit;border-radius:var(--r);margin:0 -4px;padding:4px 6px;transition:background var(--t) var(--ease)}
+  .nav-home:hover{background:rgba(143,153,168,0.10);text-decoration:none}
+  .nav-back{width:0;opacity:0;overflow:hidden;color:var(--mut-2);display:grid;place-items:center;transition:width var(--t) var(--ease),opacity var(--t) var(--ease);flex:none}
+  .nav-home:hover .nav-back{width:16px;opacity:1}
+  .mark{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;flex:none;background:linear-gradient(180deg,#3a7ddd,var(--blue));color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.18),0 1px 3px rgba(0,0,0,0.4)}
+  .mark svg{width:18px;height:18px;display:block}
+  .brand-text{display:flex;flex-direction:column;gap:1px;line-height:1.1}
+  .brand-name{font-size:14px;font-weight:600;letter-spacing:-0.01em}
+  .brand-sub{font-size:11px;color:var(--mut-2)}
+  .nav-spacer{flex:1}
+  .nav-chip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;height:24px;padding:0 9px;border-radius:var(--r-sm);font-size:11.5px;font-weight:500;color:var(--mut);background:rgba(143,153,168,0.12)}
+  .nav-chip .arrow{color:var(--faint);font-weight:600}
+  .nav-status{display:inline-flex;align-items:center;gap:7px;height:24px;padding:0 9px 0 8px;border-radius:var(--r-sm);font-size:11.5px;font-weight:600;letter-spacing:0.03em;color:var(--green-hi);background:rgba(35,133,81,0.16);text-transform:uppercase}
+  .nav-status .dot{width:7px;height:7px;border-radius:50%;background:var(--green-hi);animation:pulse 2s var(--ease) infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(114,202,155,0.45)}70%{box-shadow:0 0 0 5px rgba(114,202,155,0)}100%{box-shadow:0 0 0 0 rgba(114,202,155,0)}}
+
+  .shell{display:flex;align-items:flex-start}
+  .sidebar{position:sticky;top:50px;flex:none;width:248px;height:calc(100vh - 50px);background:var(--surface);box-shadow:1px 0 0 var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+  .side-label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--faint);padding:6px 10px 8px}
+  .side-item{display:flex;align-items:center;gap:10px;padding:0 10px;height:40px;border-radius:var(--r);color:var(--mut);font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;user-select:none;background:none;border:none;font-family:var(--sans);width:100%;text-align:left;transition:background var(--t) var(--ease),color var(--t) var(--ease)}
+  .side-item .ic{color:var(--faint)}
+  .side-item .si-txt{display:flex;flex-direction:column;line-height:1.18;min-width:0}
+  .side-item .si-sub{font-size:10.5px;font-weight:500;color:var(--faint)}
+  .side-item:hover{background:rgba(143,153,168,0.10);color:var(--txt)}
+  .side-item.active{background:rgba(45,114,210,0.16);color:var(--blue-hi)}
+  .side-item.active .ic{color:var(--blue-hi)}
+  .side-item.active .si-sub{color:var(--blue-hi);opacity:0.7}
+  .sb-div{height:1px;background:var(--line);margin:8px 8px}
+  .side-note{padding:8px 10px;font-size:11.5px;color:var(--faint);line-height:1.5}
+  .side-note b{color:var(--mut);font-weight:600}
+  .main{flex:1;min-width:0}
+  .wrap{max-width:1160px;margin:0 auto;padding:24px 22px 56px;display:flex;flex-direction:column;gap:18px}
+  .card{background:var(--surface);border-radius:var(--r-lg);box-shadow:inset 0 0 0 1px var(--line),0 1px 3px rgba(0,0,0,0.25)}
+
+  .intake{padding:16px}
+  .intake-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .intake-head .step{width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .intake-head h2{margin:0;font-size:13px;font-weight:600}
+  .intake-head .hint{margin-left:auto;font-size:12px;color:var(--mut-2)}
+  .brandbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .bb-lbl{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--mut-2);white-space:nowrap}
+  .seg{display:inline-flex;gap:2px;padding:2px;border-radius:var(--r);background:rgba(143,153,168,0.12)}
+  .seg-i{display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 11px;border:none;border-radius:var(--r-sm);background:transparent;color:var(--mut);font-family:var(--sans);font-size:12.5px;font-weight:500;cursor:pointer;transition:background var(--t) var(--ease),color var(--t) var(--ease)}
+  .seg-i:hover{background:rgba(143,153,168,0.14);color:var(--txt)}
+  .seg-i.on{background:var(--surface-3);color:var(--txt);box-shadow:0 1px 2px rgba(0,0,0,0.3)}
+  .seg-n{font-family:var(--mono);font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+  .seg-i.on .seg-n{color:var(--blue-hi)}
+  .seg-i .caret{color:var(--faint);font-size:9px;line-height:1}
+  .seg-i.on .caret{color:var(--mut)}
+
+  /* thread catalogue */
+  .ovl{position:fixed;inset:0;z-index:60;background:rgba(12,15,19,0.6);display:none;align-items:center;justify-content:center;padding:28px}
+  .ovl.on{display:flex}
+  .dlg{width:min(720px,96vw);max-height:min(78vh,720px);display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-lg);box-shadow:inset 0 0 0 1px var(--line-strong),0 12px 40px rgba(0,0,0,0.6);overflow:hidden}
+  .dlg-head{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+  .dlg-head .t{font-size:13px;font-weight:600}
+  .dlg-head .s{font-size:11.5px;color:var(--mut-2);white-space:nowrap}
+  .dlg-head .x{margin-left:auto;width:24px;height:24px;display:grid;place-items:center;border-radius:var(--r-sm);border:none;background:transparent;color:var(--mut-2);cursor:pointer;font-size:16px;line-height:1}
+  .dlg-head .x:hover{background:var(--red);color:#fff}
+  .dlg-q{padding:10px 14px;border-bottom:1px solid var(--line)}
+  .dlg-q input{width:100%;height:30px;padding:0 10px;border:none;outline:none;border-radius:var(--r);background:var(--inset);box-shadow:inset 0 0 0 1px var(--line);color:var(--txt);font:inherit;font-size:12.5px}
+  .dlg-q input:focus{box-shadow:inset 0 0 0 1px var(--blue-4),0 0 0 2px rgba(45,114,210,0.25)}
+  .dlg-body{overflow:auto;padding:10px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:6px}
+  .th{display:flex;align-items:center;gap:9px;padding:5px 7px;border-radius:var(--r-sm);background:rgba(143,153,168,0.08)}
+  .th .sw{width:26px;height:20px;flex:none}
+  .th .c{font-family:var(--mono);font-size:11.5px;color:var(--txt);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .th .h{margin-left:auto;flex:none;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .dlg-foot{padding:8px 14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--faint);display:flex;gap:10px;align-items:center}
+  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1.5px dashed var(--line-strong);border-radius:var(--r);padding:32px 22px;text-align:center;cursor:pointer;background:var(--inset);transition:border-color var(--t) var(--ease),background var(--t) var(--ease)}
+  .drop:hover{border-color:var(--blue-4);background:#181f2a}
+  .drop.hover{border-color:var(--blue);background:rgba(45,114,210,0.10)}
+  .drop.loaded{border-style:solid;border-color:rgba(114,202,155,0.45);padding:20px 22px}
+  .drop input{display:none}
+  .drop-ico{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(45,114,210,0.14);color:var(--blue-hi);margin-bottom:3px}
+  .drop.loaded .drop-ico{width:34px;height:34px;background:rgba(35,133,81,0.16);color:var(--green-hi)}
+  .drop-ico .ic{width:21px;height:21px}
+  .drop.loaded .drop-ico .ic{width:17px;height:17px}
+  .drop-title{font-size:15px;font-weight:600}
+  .drop-title b{color:var(--blue-hi);font-weight:600}
+  .note{color:var(--mut-2);font-size:12px}
+  .slot-status{display:flex;align-items:center;gap:9px;margin-top:11px;font-size:12px;color:var(--mut-2);min-height:22px}
+  .slot-status.ok{color:var(--green-hi)}
+  .slot-status.err{color:var(--red-hi)}
+  .slot-status .nm{font-family:var(--mono);font-size:11.5px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .slot-status .sz{flex:none;color:var(--mut-2);font-size:11.5px}
+  .detect{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+  .dchip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;height:24px;padding:0 9px;border-radius:var(--r-sm);background:rgba(143,153,168,0.14);color:var(--mut);font-size:11.5px}
+  .dchip b{font-family:var(--mono);font-weight:600;color:var(--txt);font-size:11px}
+  .runbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .runbar .rb-note{font-size:12px;color:var(--faint)}
+  .prog{height:4px;border-radius:999px;background:rgba(143,153,168,0.18);overflow:hidden;display:none;margin-top:12px}
+  .prog.on{display:block}
+  .prog i{display:block;height:100%;width:0;background:var(--blue);transition:width 120ms linear}
+
+  button{font-family:var(--sans)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:30px;padding:0 11px;border:none;border-radius:var(--r);background:rgba(143,153,168,0.15);color:var(--txt);font-size:13px;font-weight:500;line-height:1;cursor:pointer;white-space:nowrap;transition:background var(--t) var(--ease),opacity var(--t) var(--ease)}
+  .btn .ic{color:var(--mut)}
+  .btn:hover:not(:disabled){background:rgba(143,153,168,0.28)}
+  .btn:active:not(:disabled){background:rgba(143,153,168,0.38)}
+  .btn:disabled{background:rgba(143,153,168,0.08);color:var(--mut-2);cursor:not-allowed;opacity:.65}
+  .btn:disabled .ic{color:var(--faint)}
+  .btn.primary{background:var(--blue);color:#fff}
+  .btn.primary .ic{color:rgba(255,255,255,0.9)}
+  .btn.primary:hover:not(:disabled){background:var(--blue-2)}
+  .btn.primary:disabled{background:rgba(45,114,210,0.3);color:rgba(255,255,255,0.55)}
+  .btn.primary:disabled .ic{color:rgba(255,255,255,0.5)}
+  .btn.success{background:var(--green);color:#fff}
+  .btn.success .ic{color:rgba(255,255,255,0.9)}
+  .btn.success:hover:not(:disabled){background:#1c6b42}
+  .btn.danger{background:transparent;color:var(--red-hi);box-shadow:inset 0 0 0 1px rgba(205,66,70,0.4)}
+  .btn.danger .ic{color:var(--red-hi)}
+  .btn.danger:hover:not(:disabled){background:rgba(205,66,70,0.16)}
+
+  .alerts{display:flex;flex-direction:column;gap:10px}
+  .alerts:empty{display:none}
+  .alert{display:flex;gap:11px;padding:13px 15px 14px;border-radius:var(--r-lg);position:relative;overflow:hidden}
+  .alert::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ac)}
+  .alert.err{--ac:var(--red-hi);background:rgba(205,66,70,0.10);box-shadow:inset 0 0 0 1px rgba(250,153,156,0.24)}
+  .alert.warn{--ac:var(--orange-hi);background:rgba(200,118,25,0.10);box-shadow:inset 0 0 0 1px rgba(251,179,96,0.24)}
+  .alert.info{--ac:var(--blue-hi);background:rgba(45,114,210,0.10);box-shadow:inset 0 0 0 1px rgba(138,187,255,0.22)}
+  .alert .a-ico{flex:none;width:17px;height:17px;margin-top:1px;color:var(--ac)}
+  .alert .a-ico svg{width:17px;height:17px;fill:currentColor;display:block}
+  .alert .a-title{font-size:13px;font-weight:650;color:var(--txt);margin:0 0 3px}
+  .alert .a-text{font-size:12.5px;line-height:1.55;color:var(--mut)}
+  .alert code{font-family:var(--mono);font-size:11px;color:var(--txt);background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:var(--r-sm)}
+
+  .activity{padding:0;overflow:hidden}
+  .activity-head{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+  .activity-head .lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--mut)}
+  .activity-head .live{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:11px;color:var(--green-hi);font-weight:600;letter-spacing:0.04em}
+  .activity-head .live .dot{width:6px;height:6px;border-radius:50%;background:var(--green-hi);animation:blink 1.6s steps(1,end) infinite}
+  @keyframes blink{0%,60%{opacity:1}61%,100%{opacity:.25}}
+  #log{position:relative;margin:0;background:var(--inset);color:var(--mut);font-family:var(--mono);font-size:12px;line-height:1.5;padding:11px 14px;max-height:210px;overflow:auto}
+  #log::before{content:"";position:absolute;top:15px;bottom:12px;left:20px;width:1px;background:var(--line)}
+  .tl-row{display:grid;grid-template-columns:13px auto 1fr;align-items:baseline;column-gap:9px;padding:2.5px 0}
+  .tl-rail{justify-self:center;align-self:flex-start;margin-top:5px}
+  .tl-dot{display:block;width:7px;height:7px;border-radius:50%;background:var(--mut-2);box-shadow:0 0 0 3px var(--inset)}
+  .tl-time{font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+  .tl-msg{font-size:12px;color:var(--mut);white-space:pre-wrap;word-break:break-word}
+  .tl-row.step .tl-dot{background:var(--blue-hi)} .tl-row.step .tl-msg{color:var(--txt)}
+  .tl-row.ok .tl-dot{background:var(--green-hi)} .tl-row.ok .tl-msg{color:var(--green-hi)}
+  .tl-row.warn .tl-dot{background:var(--orange-hi)} .tl-row.warn .tl-msg{color:var(--orange-hi)}
+  .tl-row.err .tl-dot{background:var(--red-hi)} .tl-row.err .tl-msg{color:var(--red-hi)}
+  .tl-row.sub .tl-dot{width:4px;height:4px;margin-left:1.5px;background:var(--faint)} .tl-row.sub .tl-msg{color:var(--mut-2)}
+
+  #results{display:none;flex-direction:column;gap:16px}
+  .results-bar{display:flex;align-items:center;gap:8px}
+  .results-bar .step{width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .results-bar h2{margin:0;font-size:13px;font-weight:600}
+  .results-bar .hint{margin-left:auto;font-size:12px;color:var(--mut-2)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--surface);border-radius:var(--r-lg);padding:14px 16px;box-shadow:inset 0 0 0 1px var(--line)}
+  .kpi-top{display:flex;align-items:center;gap:7px;color:var(--mut-2);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em}
+  .kpi-top .ic{color:var(--kc,var(--blue))}
+  .kpi-val{font-size:30px;font-weight:600;letter-spacing:-0.02em;line-height:1;margin-top:9px;font-variant-numeric:tabular-nums}
+  .kpi-sub{font-size:11.5px;color:var(--faint);margin-top:5px}
+
+  .pv{padding:16px;display:flex;flex-direction:column;gap:12px}
+  .pv-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .pv-head .lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--mut-2)}
+  .chipbtn{height:26px;padding:0 10px;border-radius:var(--r-sm);background:rgba(143,153,168,0.14);color:var(--mut);font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:6px;cursor:pointer;border:none;font-family:var(--sans)}
+  .chipbtn:hover{background:rgba(143,153,168,0.26);color:var(--txt)}
+  .chipbtn.on{background:rgba(45,114,210,0.18);color:var(--blue-hi)}
+  .chipbtn .n{font-variant-numeric:tabular-nums;opacity:.75}
+  .pv-search{margin-left:auto;display:flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:var(--r);background:var(--inset);box-shadow:inset 0 0 0 1px var(--line);min-width:210px}
+  .pv-search .ic{color:var(--faint)}
+  .pv-search input{flex:1;background:none;border:none;outline:none;color:var(--txt);font:inherit;font-size:12.5px}
+  .pv-wrap{border-radius:var(--r-lg);box-shadow:inset 0 0 0 1px var(--line);background:var(--surface);max-height:440px;overflow:auto}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}
+  th,td{padding:6px 11px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line-2)}
+  th{background:var(--surface-2);position:sticky;top:0;z-index:1;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--mut);border-bottom:1px solid var(--line)}
+  td{color:var(--txt);font-variant-numeric:tabular-nums}
+  td.mono{font-family:var(--mono);font-size:11.5px}
+  td.num{text-align:right;color:var(--faint);width:64px}
+  tbody tr:hover td{background:rgba(255,255,255,0.035)}
+  tr:last-child td{border-bottom:none}
+  .sw{display:inline-block;width:52px;height:18px;border-radius:var(--r-sm);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.18);vertical-align:middle}
+  .sw.none{background:repeating-linear-gradient(45deg,#2b3138 0 5px,#232830 5px 10px)}
+  .tag{display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:var(--r-sm);font-size:9.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
+  .tag.ok{color:var(--green-hi);background:rgba(35,133,81,0.18)}
+  .tag.nf{color:var(--red-hi);background:rgba(205,66,70,0.18)}
+  .tag.empty{color:var(--mut);background:rgba(143,153,168,0.18)}
+  .empty{padding:22px;text-align:center;color:var(--mut-2);font-size:12.5px}
+  .export{padding:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .export .ex-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .export .ex-name{font-family:var(--mono);font-size:12px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .export .ex-meta{font-size:11.5px;color:var(--mut-2)}
+  .export .ex-actions{margin-left:auto;display:flex;gap:8px}
+</style>
+</head>
+<body data-screen-label="Industrial Engineer">
+
+<nav class="navbar">
+  <a class="nav-home" href="index.html" title="Back to home" aria-label="Back to home">
+    <span class="nav-back" aria-hidden="true"><svg viewBox="0 0 16 16" style="width:16px;height:16px;fill:currentColor"><path d="M11 7H4.41l2.3-2.29c.18-.18.29-.43.29-.71a1.003 1.003 0 0 0-1.71-.71l-4 4c-.18.18-.29.43-.29.71s.11.53.29.71l4 4a1.003 1.003 0 0 0 1.42-1.42L4.41 9H11c2.21 0 4 1.79 4 4v1c0 .55.45 1 1 1s1-.45 1-1v-1c0-3.31-2.69-6-6-6"/></svg></span>
+    <span class="mark">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19.4 4.6 8.2 16.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M8.9 15.2c2.9 2.2 5.6 2.3 7.4.4 1.3-1.4.9-3.3-.6-3.1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".75"/>
+        <circle cx="10.4" cy="15" r="1.1" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </span>
+    <div class="brand-text">
+      <div class="brand-name">Industrial Engineer</div>
+      <div class="brand-sub">Trim card tooling</div>
+    </div>
+  </a>
+  <span class="nav-spacer"></span>
+  <span class="nav-status"><span class="dot"></span>Offline</span>
+</nav>
+
+<div class="shell">
+<aside class="sidebar">
+  <div class="side-label">Tools</div>
+  <button class="side-item active" type="button">
+    <span class="ic"><svg viewBox="0 0 16 16"><path d="M15.71 4.29l-4-4A1.003 1.003 0 0 0 11 0H3c-.55 0-1 .45-1 1v14c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V5c0-.28-.11-.53-.29-.71M12 14H4V2h6v3c0 .55.45 1 1 1h1zM5.5 8h5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m0 3h5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5"/></svg></span>
+    <span class="si-txt"><span>Trim card color fill</span><span class="si-sub">Coats &amp; AE master</span></span>
+  </button>
+  <div class="sb-div"></div>
+  <div class="side-note">Master color table is built in — <b id="sideCount">—</b> thread codes from the Coats &amp; AE supplier master. No second file to pick.</div>
+</aside>
+
+<main class="main">
+<div class="wrap">
+
+  <section class="card intake">
+    <div class="intake-head">
+      <span class="step">1</span>
+      <h2>Add the BLK file</h2>
+      <span class="hint">Columns are matched by header name, not position</span>
+    </div>
+
+    <div class="brandbar">
+      <span class="bb-lbl">Thread brand</span>
+      <div class="seg" id="brandSeg"></div>
+      <span class="note" id="brandNote"></span>
+    </div>
+
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept=".xlsm,.xlsx">
+      <span class="drop-ico"><span class="ic"><svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8m3 8c-.28 0-.53-.11-.71-.29L9 6.41V12c0 .55-.45 1-1 1s-1-.45-1-1V6.41l-1.29 1.3a1.003 1.003 0 0 1-1.42-1.42l3-3C7.47 3.11 7.72 3 8 3s.53.11.71.29l3 3A1.003 1.003 0 0 1 11 8"/></svg></span></span>
+      <span class="drop-title">Drop the BLK file here, or <b>click to browse</b></span>
+      <span class="note">.xlsx / .xlsm · builds a trim card thread workbook and fills column F automatically</span>
+    </label>
+    <div class="slot-status" id="st"><span class="nm">No BLK file loaded.</span></div>
+    <div class="detect" id="detect"></div>
+
+    <div class="runbar">
+      <button id="runBtn" class="btn primary" disabled><span class="ic"><svg viewBox="0 0 16 16"><path d="M5.5 3.4 12.8 8l-7.3 4.6z"/></svg></span>Build trim card</button>
+      <button id="clearBtn" class="btn danger" disabled><span class="ic"><svg viewBox="0 0 16 16"><path d="m9.41 8 3.29-3.29c.19-.18.3-.43.3-.71a1.003 1.003 0 0 0-1.71-.71L8 6.59l-3.29-3.3a1.003 1.003 0 0 0-1.42 1.42L6.59 8 3.3 11.29c-.19.18-.3.43-.3.71a1.003 1.003 0 0 0 1.71.71L8 9.41l3.29 3.29c.18.19.43.3.71.3a1.003 1.003 0 0 0 .71-1.71z"/></svg></span>Clear</button>
+      <span class="rb-note">Builds a new trim card thread workbook. The BLK file on your disk is not changed.</span>
+    </div>
+    <div class="prog" id="prog"><i></i></div>
+  </section>
+
+  <div class="alerts" id="alerts"></div>
+
+  <section class="card activity">
+    <div class="activity-head">
+      <span class="ic" style="color:var(--mut)"><svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8M7 3h2v2H7zm3 10H6v-1h1V7H6V6h3v6h1z"/></svg></span>
+      <span class="lbl">Activity</span>
+      <span class="live"><span class="dot"></span>LOCAL</span>
+    </div>
+    <div id="log"></div>
+  </section>
+
+  <div id="results">
+    <div class="results-bar">
+      <span class="step">2</span>
+      <h2>Preview</h2>
+      <span class="hint" id="resHint"></span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi" style="--kc:var(--blue-hi)">
+        <div class="kpi-top"><span class="ic"><svg viewBox="0 0 16 16"><path d="M15 1H1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h14c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1M5 13H2v-2h3zm0-3H2V8h3zm0-3H2V5h3zm4 6H6v-2h3zm0-3H6V8h3zm0-3H6V5h3zm5 6h-4v-2h4zm0-3h-4V8h4zm0-3h-4V5h4z"/></svg></span>Thread rows</div>
+        <div class="kpi-val" id="kRows">0</div>
+        <div class="kpi-sub" id="kRowsSub">Rows in the BLK file</div>
+      </div>
+      <div class="kpi" style="--kc:var(--green-hi)">
+        <div class="kpi-top"><span class="ic"><svg viewBox="0 0 16 16"><path d="M14.49 3.51a1 1 0 0 0-1.42 0L6 10.59 2.93 7.51a1.003 1.003 0 0 0-1.42 1.42l3.79 3.78c.18.18.43.29.7.29s.52-.11.7-.29l7.79-7.78c.39-.39.39-1.03 0-1.42"/></svg></span>Found</div>
+        <div class="kpi-val" id="kOk">0</div>
+        <div class="kpi-sub" id="kOkSub">Matched in the master</div>
+      </div>
+      <div class="kpi" style="--kc:var(--red-hi)">
+        <div class="kpi-top"><span class="ic"><svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8m1 12H7v-2h2zm0-3H7V4h2z"/></svg></span>Not found</div>
+        <div class="kpi-val" id="kNf">0</div>
+        <div class="kpi-sub">Written as NOT FOUND, red</div>
+      </div>
+      <div class="kpi" style="--kc:var(--turquoise)">
+        <div class="kpi-top"><span class="ic"><svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1-.24-.27-.39-.62-.39-1 0-.83.67-1.5 1.5-1.5H12c2.21 0 4-1.79 4-4 0-3.86-3.58-7-8-7M3.5 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m3 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/></svg></span>Colors used</div>
+        <div class="kpi-val" id="kCol">0</div>
+        <div class="kpi-sub" id="kColSub">Distinct fills painted</div>
+      </div>
+    </div>
+
+    <section class="card pv">
+      <div class="pv-head">
+        <span class="lbl">Rows</span>
+        <button class="chipbtn on" id="fAll" type="button">All <span class="n" id="nAll">0</span></button>
+        <button class="chipbtn" id="fNf" type="button">Not found <span class="n" id="nNf">0</span></button>
+        <span class="pv-search"><span class="ic"><svg viewBox="0 0 16 16"><path d="M15.55 13.4l-2.67-2.68a6 6 0 1 0-2.15 2.15l2.68 2.68a1.49 1.49 0 0 0 2.14 0 1.49 1.49 0 0 0 0-2.15M6 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8"/></svg></span><input id="q" type="text" placeholder="Filter style, placement or code" autocomplete="off"></span>
+      </div>
+      <div class="pv-wrap" id="pvWrap"></div>
+      <div class="note" id="pvNote"></div>
+    </section>
+
+    <section class="card export">
+      <span class="ic" style="color:var(--green-hi);width:20px;height:20px"><svg viewBox="0 0 16 16"><path d="M8 11c.28 0 .53-.11.71-.29l4-4a1.003 1.003 0 0 0-1.42-1.42L9 7.59V1c0-.55-.45-1-1-1S7 .45 7 1v6.59L4.71 5.29a1.003 1.003 0 0 0-1.42 1.42l4 4c.18.18.43.29.71.29m7 1c-.55 0-1 .45-1 1v1H2v-1c0-.55-.45-1-1-1s-1 .45-1 1v2c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-2c0-.55-.45-1-1-1"/></svg></span>
+      <div class="ex-text">
+        <div class="ex-name" id="outName">—</div>
+        <div class="ex-meta" id="outMeta">Nothing built yet.</div>
+      </div>
+      <div class="ex-actions">
+        <button id="dlBtn" class="btn success" disabled><span class="ic"><svg viewBox="0 0 16 16"><path d="M8 11c.28 0 .53-.11.71-.29l4-4a1.003 1.003 0 0 0-1.42-1.42L9 7.59V1c0-.55-.45-1-1-1S7 .45 7 1v6.59L4.71 5.29a1.003 1.003 0 0 0-1.42 1.42l4 4c.18.18.43.29.71.29m7 1c-.55 0-1 .45-1 1v1H2v-1c0-.55-.45-1-1-1s-1 .45-1 1v2c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-2c0-.55-.45-1-1-1"/></svg></span>Export <span id="btnExt">.xlsx</span></button>
+      </div>
+    </section>
+  </div>
+
+</div>
+</main>
+</div>
+
+<div class="ovl" id="ovl">
+  <div class="dlg" role="dialog" aria-modal="true" aria-label="Thread colors">
+    <div class="dlg-head">
+      <span class="t" id="dlgT">Thread colors</span>
+      <span class="s" id="dlgS"></span>
+      <button class="x" id="dlgX" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="dlg-q"><input id="dlgQ" type="text" placeholder="Search code or hex" autocomplete="off"></div>
+    <div class="dlg-body" id="dlgBody"></div>
+    <div class="dlg-foot" id="dlgF"></div>
+  </div>
+</div>
+
+<script id="master-data" type="text/plain">NATRL=;08ANT=E1FF7F;09ANT=D7FF74;121ZR=FF8448;122ZR=FF014D;13ANT=E3FF02;15ANT=97FF5E;17ANT=63DB43;30ANT=006FAE;39ANT=7C2A8B;41ANT=009DA9;44ANT=FF4B98;513YQ=34509E;55ANT=FF6294;69ANT=FF4A21;72ANT=FF818E;75ANT=FF3660;C0002=C3ACA7;C0008=D34D5C;C0014=F2B8B0;C0016=AA7852;C0050=BC8C72;C0051=967873;C0053=564647;C0054=9B835D;C0067=8D5833;C0075=127A64;C0088=A5B8DA;C0097=2A2A2E;C0122=F0D1A9;C0129=F4C102;C0141=A01044;C0196=A73E2C;C0206=9A514E;C0222=CE4941;C0228=473F38;C0234=917F72;C0235=565744;C0241=A66841;C0270=B1804B;C0274=313337;C0275=A47A45;C0293=B29A7D;C0309=32312E;C0314=EBCACF;C0317=F5BFD0;C0328=705F53;C0335=BB6C7E;C0338=504841;C0361=8B386F;C0363=76502F;C0380=D8AD82;C0388=892D3B;C0391=48353D;C0394=633738;C0414=4C4B4B;C0417=6E2732;C0428=9D0131;C0493=443851;C0506=7F6B5D;C0512=AB8043;C0514=5EA280;C0532=747A37;C0537=B9443B;C0538=8D725A;C0550=95A35C;C0554=868D7C;C0579=4B4E5D;C0584=495F71;C0590=594D37;C0594=3E413E;C0595=2E4337;C0631=49AFC4;C0637=A3C6C8;C0639=629497;C0653=BA8A53;C0667=007D83;C0711=6F86AA;C0713=84ADDB;C0715=C6D3E0;C0717=84A7BB;C0734=3E6F93;C0736=005586;C0794=373B52;C0837=A58682;C0839=C9B69C;C0870=844139;C0898=433333;C0966=6A6B6F;C0970=765134;C0982=4F525C;C0993=555A58;C0996=5E3C38;C0998=684835;C0999=414954;C1100=CBDD89;C1102=F09DB3;C1103=EDEAC6;C1109=E8E3CC;C1113=EEE4C9;C1123=F0ECD9;C1139=E9E1B8;C1142=F0DFAC;C1156=899FCE;C1162=F1E59F;C1166=F5E199;C1168=F0DDA2;C1170=5D4C54;C1172=EEE89B;C1185=F2E170;C1187=E9D65E;C1190=363941;C1202=F8DB13;C1226=F4CD4E;C1227=F7D343;C1229=F8CF5B;C1231=F5CD6C;C1257=F5C25D;C1262=F6BA39;C1268=F4A82E;C1277=FCC11A;C1278=F2B002;C1281=F9BA02;C1283=E0A102;C1295=F6CC02;C1304=D2B978;C1311=D8BB86;C1312=CF7C9D;C1322=F4B973;C1330=9E7D8C;C1336=F2D0AE;C1355=F4D49F;C1359=F1C98D;C1367=E9BD71;C1382=F5D383;C1390=6E88C0;C1400=764C25;C1401=F3B45F;C1404=CE9243;C1407=C88B30;C1414=EBA43E;C1421=E2A430;C1424=EDAD3F;C1429=E2AD4F;C1433=D0B24C;C1452=C3A05C;C1454=C3A976;C1458=C8A869;C1470=AB8742;C1474=A88345;C1489=968242;C1511=292E3E;C1519=006959;C1555=AE8A2F;C1556=64846D;C1699=00849C;C1711=E7E3FF;C1712=E3E2FF;C1714=8AA7CF;C1730=F2F2E8;C1740=EAE9FF;C1750=ECECFF;C1754=476882;C1970=D34256;C1985=3F4347;C2010=C8C460;C2033=3D423C;C2080=D1A2BA;C2113=E76E64;C2120=D96627;C2130=E19061;C2131=6A3533;C2138=DCA894;C2152=F1BDA7;C2161=F49881;C2202=A04E47;C2223=C53D26;C2226=CC5548;C2232=CC421B;C2236=DB5747;C2240=DA4C38;C2257=CA5343;C2290=D2696E;C2293=E66B6F;C2301=98643F;C2305=A36E51;C2306=9F7656;C2309=B27D5B;C2313=B27747;C2314=99673C;C2315=9D7147;C2317=9C784F;C2318=A5815C;C2324=835B3B;C2325=BF9360;C2326=7C5737;C2329=CC6D7B;C2332=926142;C2333=845634;C2335=81582F;C2336=86563B;C2338=9F643C;C2352=956138;C2353=BD873D;C2356=A47849;C2357=BB945B;C2368=A9854D;C2369=B99D6F;C2371=9B805C;C2372=BB915F;C2373=CB9E6A;C2374=9E8265;C2380=AE9068;C2384=8E5938;C2385=A95234;C2386=B97334;C2390=A16529;C2398=A86F35;C2402=BB7059;C2410=CF6524;C2414=D5621A;C2427=EA671B;C2429=DE6439;C2431=4279AF;C2437=E2673E;C2446=D2553C;C2451=E97E64;C2457=CA6D4C;C2459=CA663D;C2478=E88931;C2479=DA7E1F;C2610=BC5A3F;C2712=EBEBE7;C2740=EBEBE2;C2874=DD9389;C3101=E892A0;C3113=EBA0C5;C3115=EFADC5;C3125=CD7696;C3149=F1CED7;C3156=F7C6D1;C3166=ED91B7;C3173=F2BCD1;C3182=F4C0C4;C3184=EEB5B4;C3185=E9BAB7;C3188=FBCEC4;C3194=F3AE98;C3223=F189AC;C3231=DE8481;C3237=DE8075;C3244=F6BDB9;C3258=D2B5C1;C3291=D16976;C3301=466C69;C3307=9F7C87;C3325=B79092;C3332=BF858A;C3357=B85F6E;C3361=A06D81;C3365=9D636F;C3368=864F6A;C3374=973E5A;C3391=E9A7A6;C3426=D55772;C3459=BF2E5B;C3600=9B3173;C3604=933573;C3619=7F2B61;C3638=B61A65;C3646=E66496;C3664=D3679A;C3673=C9357D;C3676=CB4B84;C3715=A5205E;C3717=B63875;C3723=993661;C3780=8C1A37;C3781=960139;C3785=9E1B3A;C3798=9F013C;C3807=970D2B;C3808=A3252F;C3814=B15C3E;C3822=AA0138;C3826=B51F45;C3828=AD013F;C3835=A73669;C3838=B6304C;C3853=A51F39;C3860=CD424A;C3862=CA3545;C3867=C82038;C3870=981234;C3878=A80156;C3880=A4203F;C3885=AF293A;C3890=AF1D34;C3899=AF2E44;C3901=522D38;C3902=4F303B;C3915=4F3A43;C3924=572C38;C3926=623444;C3927=5C2D41;C3929=633D48;C3930=553240;C3931=462937;C3935=502942;C3940=622739;C3941=61253B;C3943=612B3D;C3945=673539;C3948=692C41;C3950=5F2631;C3952=65293F;C3954=602745;C3958=702134;C3959=7E1E35;C3961=772337;C3966=79293B;C3968=7F1B30;C3971=752D3F;C3974=762340;C3975=6B2237;C3983=712A42;C3990=802E39;C3991=982C40;C3993=75263D;C4105=9E8ABD;C4106=AD9DD1;C4121=7D789F;C4144=D090BB;C4156=9B92B8;C4157=C9BFDC;C4178=A590AB;C4183=EEDBE4;C4266=D1BCD5;C4300=5F3985;C4324=68558C;C4328=816CA9;C4331=997AA7;C4333=B890B8;C4344=A57CBD;C4351=65356C;C4354=7C3A6F;C4363=443C3F;C4366=814E8A;C4375=9B5992;C4377=9D7394;C4379=90727E;C4382=A36BA2;C4386=B571A1;C4388=812456;C4392=DCB6CA;C4396=8B778A;C4460=D94C7A;C4488=9A2449;C4638=685D82;C4642=DD658E;C4649=5A4684;C4652=D06E88;C4659=C05884;C4663=555295;C4665=CE5897;C4668=504980;C4684=616198;C4695=7177B3;C4697=B7367B;C4812=B52F38;C4816=AF434B;C4817=A93640;C4820=C82951;C4908=542C4F;C4911=4F2F49;C4912=452F42;C4919=493246;C4920=673847;C4926=562E5F;C4931=3B3143;C4935=443A55;C4939=452E4B;C4940=705165;C4943=675060;C4965=333661;C4983=462E61;C4987=3D3765;C4998=3C3149;C5104=2B6051;C5105=D33264;C5122=008461;C5127=406349;C5131=236E47;C5140=62A57D;C5149=1B7750;C5153=ABD1C7;C5164=55A38F;C5165=7D9F91;C5167=2D7E4E;C5169=53A89B;C5171=6EA08F;C5172=11917B;C5188=2A8C7B;C5189=4B9883;C5190=2B7250;C5195=11756A;C5198=00695C;C5200=264B42;C5203=2C655A;C5204=266250;C5205=184F44;C5207=2D5C51;C5208=178980;C5209=0D7D74;C5213=295247;C5222=2C8161;C5223=006F53;C5229=206245;C5309=857F39;C5312=ADAB3D;C5324=697139;C5327=876BA6;C5334=6E6CA0;C5337=647B3A;C5340=73935D;C5341=9CBB81;C5342=6E8C5D;C5345=9EAB77;C5349=929C69;C5352=A3B960;C5355=8FA74F;C5358=B5E189;C5361=A4D48B;C5362=679344;C5363=84BD64;C5366=7AB25F;C5368=81AC49;C5375=A6C435;C5384=8E6381;C5391=C19DC4;C5393=3C8C4E;C5478=478D5B;C5500=52816C;C5502=5D7F74;C5525=4B5048;C5527=797B69;C5533=476040;C5535=60765D;C5539=949F86;C5541=8B9384;C5544=878D84;C5546=42584E;C5547=4B6461;C5561=435E42;C5566=6D8A74;C5571=98B490;C5595=707F51;C5621=596E5C;C5706=646D5B;C5708=585343;C5710=5C5950;C5711=57574E;C5713=555249;C5715=787267;C5717=535647;C5721=524B42;C5722=565048;C5724=4B4B3A;C5726=585346;C5727=4D483D;C5742=56533E;C5743=505039;C5744=595B3D;C5745=525236;C5748=516040;C5761=74714D;C5763=66532F;C5765=5F533E;C5768=756E5F;C5770=786B45;C5775=695849;C5784=7C674D;C5798=626247;C5803=662C55;C5810=E67867;C5884=3B3D37;C5900=214E48;C5903=474538;C5904=534633;C5906=4A4336;C5908=544A36;C5909=464434;C5915=344849;C5918=435658;C5920=2E3F43;C5923=43443E;C5927=484B42;C5930=504F48;C5935=2F3445;C5936=334140;C5937=2B3D39;C5938=2A423C;C5939=6E3A4B;C5941=2D3B37;C5942=303F3B;C5943=2A3A3C;C5946=444743;C5951=553367;C5953=314741;C5956=334A3D;C5958=284035;C5964=315045;C5968=2C4941;C5969=303F3F;C5976=2D4547;C5980=264B45;C5981=354C50;C5983=3F4544;C5984=404642;C5985=33423E;C5987=4A5451;C5989=4F3278;C5990=E3E379;C5991=294D4A;C5993=3B4B51;C5999=2E493F;C6103=5AB5B8;C6104=5BA3C4;C6117=7AC3BA;C6122=1A7B61;C6123=006D4F;C6125=82779D;C6126=3E908E;C6128=1A573D;C6130=3986B2;C6133=117147;C6136=0089B3;C6138=448B5E;C6156=BED7CD;C6168=1D5D7D;C6173=77B2A8;C6175=1C8371;C6178=7CC3B6;C6310=78B3D0;C6315=3EA3B4;C6328=8F1B63;C6342=7DC0D1;C6358=82A39D;C6377=9BC4C2;C6386=A2D8D3;C6388=9AD0CB;C6389=8ECACC;C6390=9ED4D5;C6396=639895;C6409=82B5CE;C6605=214C4D;C6607=2E4D54;C6610=365C61;C6613=065960;C6619=164C4D;C6629=1E7777;C6638=18A79F;C6645=2B8780;C6654=2E6971;C6656=277682;C6659=007684;C6668=00837F;C6677=2A8E93;C6727=504D41;C6767=615A44;C6830=745A45;C6902=76ADC1;C6905=5186A6;C6911=3D99B1;C6912=533240;C6913=4093AD;C6924=4C9CC8;C6934=2688AC;C6952=1B5363;C6954=1B4B55;C6958=254D5C;C6973=00819E;C6982=137497;C6990=52767D;C6992=5B7B86;C6995=40A2B9;C7020=6F5648;C7083=0E7193;C7100=748FA8;C7107=944E50;C7109=698AB5;C7110=677CA1;C7114=7293B4;C7118=5A7695;C7136=7CA3D2;C7141=7191AF;C7142=819AC2;C7143=98B0D4;C7145=A8B0C1;C7151=B8C4D1;C7152=7998BB;C7156=7B90BC;C7157=C3D5E4;C7163=BDCEE5;C7167=AEC0D4;C7170=A0C5E0;C7172=94B0C6;C7177=9DAECF;C7194=9FB2C9;C7197=92B2CB;C7201=7298C0;C7204=7F9FC7;C7207=829DBD;C7211=6D79A6;C7212=6D89B4;C7215=727EA3;C7221=818BA3;C7225=96B0C8;C7232=99AAD3;C7234=78A7D1;C7244=98A5B9;C7253=7F8DB6;C7262=B5D0D5;C7266=A5C3DB;C7269=B0C7D4;C7274=99A7C6;C7276=A8BBD2;C7279=97ADCC;C7281=97C2D9;C7284=2A3E70;C7289=9DC3D9;C7295=87A7CA;C7298=88B4C6;C7305=2F4B89;C7309=2E548E;C7310=375390;C7313=35467E;C7314=3A4F8B;C7315=2E3568;C7316=2B3769;C7318=2C3A70;C7324=2F3C69;C7326=363673;C7327=254472;C7329=37417A;C7330=2F3757;C7331=2B4475;C7335=364374;C7336=2E466D;C7342=315387;C7343=376287;C7347=546BA4;C7349=546FA3;C7350=6678A3;C7354=3B659B;C7357=3B4B70;C7361=2E3459;C7364=88C2CD;C7366=375B91;C7368=304569;C7369=085487;C7370=0066A6;C7375=006DA4;C7379=3670AB;C7380=356AA4;C7381=426492;C7382=30377A;C7383=536399;C7385=204F88;C7388=4A75A5;C7389=274C84;C7395=5978A2;C7396=6B90BB;C7398=6984B1;C7439=2B375B;C7442=2D5489;C7453=4B8BB0;C7456=2F709A;C7472=0071A1;C7473=1970A1;C7475=395868;C7497=5D87B5;C7503=4E647D;C7512=3C576D;C7514=405B70;C7517=53596E;C7519=52647F;C7521=4C5F77;C7524=4D5B77;C7529=3D405A;C7532=45516E;C7533=374B69;C7540=577DA2;C7542=606F83;C7544=70869B;C7545=436179;C7548=557490;C7549=556C89;C7551=5F6E8B;C7553=586B8B;C7555=718EAC;C7560=5B667E;C7563=45546E;C7564=31435F;C7565=55667B;C7579=5C7EA0;C7580=5B769A;C7581=606880;C7582=33547D;C7586=485578;C7587=27313F;C7589=566082;C7594=475279;C7598=374666;C7608=39526F;C7618=5C677C;C7642=349996;C7656=526072;C7669=009899;C7689=006E81;C7699=303847;C7900=2F3141;C7903=383440;C7904=34343D;C7907=313239;C7908=2A344E;C7912=2E2E36;C7915=2D2D39;C7916=2C2C41;C7917=3E3747;C7919=2E2D3F;C7921=36304C;C7927=282B3E;C7928=4C526A;C7929=292C3A;C7930=313749;C7932=2C3140;C7933=323744;C7939=2E2E39;C7940=3C485C;C7941=2D2F42;C7944=373B4E;C7949=303347;C7952=40495E;C7953=2D3442;C7955=373A49;C7956=313A4F;C7957=263845;C7959=2D313F;C7960=333642;C7967=373649;C7969=2D2F3E;C7970=343D5A;C7975=3A465E;C7976=37455B;C7977=2D2E42;C7978=2C2B3D;C7979=353F53;C7980=283956;C7981=343143;C7982=2F3048;C7985=303251;C7988=2C3148;C7991=3F394A;C7994=2D4057;C7996=313A53;C7998=303D55;C7999=2D3D59;C8101=C9B798;C8106=C1B4A4;C8107=C1B6A8;C8109=CFC1B2;C8111=B7AEA0;C8112=BFC1BC;C8113=B6A796;C8114=B9A791;C8116=BFBCB5;C8119=C9C1B4;C8125=E8D3BB;C8130=E8D8D2;C8133=F2DFC8;C8135=E0CEB7;C8136=ECDAC7;C8137=F1E0C6;C8140=C8B7A9;C8145=BFAB9A;C8149=D6C1B0;C8154=EEEBDD;C8156=E1E0D8;C8158=EEE9D8;C8167=DBC9B7;C8169=EBDBC7;C8171=F2E0D1;C8172=E3D8D2;C8173=DACEBB;C8174=DCD1C1;C8176=F0D5B5;C8178=DFCCB2;C8182=DBD1C5;C8184=DAC4AB;C8186=D4C6A5;C8202=C9B5A0;C8203=EECDB7;C8213=548279;C8228=D8C9BF;C8241=B5A193;C8248=AF9B8A;C8250=CEB9A5;C8261=EBE5D9;C8264=E5D8C9;C8300=9C8F80;C8304=A99787;C8305=A59A8C;C8308=D5B2A4;C8316=DABAA9;C8319=AF9C83;C8322=A99076;C8323=B9A87A;C8325=AD9D7B;C8326=ACA28C;C8328=B7AB91;C8331=9D9083;C8334=9F8C81;C8336=8C8479;C8337=8E8272;C8343=B2AD9F;C8344=B2A79B;C8345=A79B8B;C8347=A09684;C8348=A69986;C8349=B18C6E;C8353=D4B49A;C8354=DBBFA6;C8356=CFAE8B;C8357=DABD9D;C8360=B09F88;C8361=907868;C8362=9E877B;C8363=9E867B;C8368=A48369;C8370=A88B86;C8377=A59086;C8379=BFA088;C8380=B89C80;C8381=B6967C;C8382=A49780;C8383=9B8D7B;C8384=948B7C;C8389=BDA18D;C8391=A28F77;C8392=A48D76;C8396=978F6E;C8397=8B8269;C8399=938972;C8417=A48E7C;C8449=B37F78;C8452=A58278;C8501=8A6850;C8506=867669;C8510=7A736A;C8515=807B71;C8517=958368;C8518=8E7E64;C8520=846855;C8521=6E4F35;C8524=7B5D48;C8526=957661;C8530=8A7C72;C8534=8A775F;C8538=977A65;C8569=8A735D;C8570=74645C;C8587=735547;C8592=775A50;C8593=8E8170;C8597=897A6C;C8598=76695E;C8599=948370;C8601=8D6C4F;C8602=7A6F64;C8603=837565;C8604=615A4D;C8605=837364;C8606=8C7B69;C8607=827368;C8609=757260;C8611=7E7A72;C8612=746C60;C8614=8F7D60;C8624=7D624F;C8625=976A4C;C8627=7D5D49;C8628=7F5840;C8629=9B9086;C8630=91867C;C8631=8E816D;C8634=9C8371;C8636=7D6D5B;C8638=A5846A;C8639=967E69;C8640=A18973;C8645=9C8571;C8649=665551;C8650=685952;C8652=62544D;C8654=59544C;C8655=5E5552;C8656=4D4345;C8657=8C715F;C8658=997362;C8659=837561;C8660=8F664E;C8663=947B5D;C8664=6A5D4C;C8665=9D8467;C8667=927B6B;C8668=8A7363;C8669=887361;C8671=7C685F;C8674=8E8380;C8676=867973;C8677=8A7D7A;C8678=635957;C8679=82706A;C8680=6B5D59;C8682=675D59;C8683=797166;C8684=736765;C8685=66504D;C8686=715A55;C8687=675E57;C8688=765A4D;C8692=786454;C8694=6F6362;C8696=615853;C8699=6F5C58;C8702=8F3638;C8707=8C4239;C8716=824A4D;C8726=785146;C8736=885D56;C8749=D48A79;C8752=AB7F72;C8758=5C3E3D;C8762=6F4238;C8770=7E4A33;C8774=785442;C8775=4A3F3D;C8776=7C5A48;C8779=6C4F3C;C8781=774A33;C8786=6E534E;C8800=AD8D7A;C8806=936231;C8810=726459;C8815=786866;C8834=4B393C;C8859=905B58;C8863=684640;C8864=3B3133;C8888=5A4B48;C8894=58443F;C8897=52413C;C8905=4F3830;C8918=664940;C8924=442F38;C8925=615241;C8929=453538;C8930=61544A;C8933=3F332F;C8937=443737;C8938=4F4042;C8939=554144;C8940=332E2E;C8941=4B433A;C8946=3A382F;C8947=363735;C8948=403D39;C8950=373732;C8953=3C3333;C8955=393131;C8956=3A3334;C8963=41373A;C8966=423437;C8970=4F3A30;C8973=4B3D32;C8978=5C4843;C8979=463A3A;C8982=52453B;C8985=4A3837;C8986=514140;C8989=483838;C8991=5F4641;C8996=463836;C8999=493B35;C9114=BFBDC3;C9117=CACED3;C9121=DAD7D6;C9122=C0C1BE;C9125=9A9B9C;C9131=AFAEB5;C9140=C0C0CB;C9142=ACADB5;C9153=B0B8BD;C9156=C1C7C9;C9164=BBB1A9;C9166=B9B3AA;C9167=C0B9B2;C9170=B8B3AE;C9171=B3AEA7;C9173=C3B9B4;C9176=BAB2A6;C9178=A59D97;C9187=B1AEA1;C9189=BAB2AB;C9199=CABDB3;C9215=B1B0B2;C9218=C6C4C2;C9249=CFCBD5;C9294=B6B6B2;C9304=ADA4A3;C9308=AA9B92;C9309=B9AC9D;C9310=A2968E;C9311=99928D;C9313=9B8E88;C9316=A99C91;C9325=9C9A91;C9326=99938A;C9332=AC9E98;C9335=B4A9A4;C9338=7DA4A6;C9348=A4A5AF;C9353=8C9498;C9354=999086;C9363=8E98A4;C9370=9B9A9C;C9372=939393;C9373=918C93;C9374=858387;C9375=89898A;C9376=86888B;C9377=85857D;C9383=868997;C9387=797477;C9388=6F6A70;C9392=868485;C9393=85868B;C9394=96999C;C9398=A09D98;C9404=9B9DA7;C9424=878E9C;C9444=726B66;C9455=9EB1A5;C9491=78787B;C9493=5D5C5D;C9501=908A8E;C9505=AFA2A1;C9519=7D775D;C9522=B0ADA3;C9524=878188;C9537=717272;C9548=6D7995;C9553=5B514B;C9583=839080;C9588=595A5C;C9590=969998;C9592=64655D;C9600=555C5A;C9601=61767D;C9602=698384;C9606=72726E;C9611=8C8884;C9612=8A817E;C9613=908984;C9614=807671;C9616=727779;C9623=7B7D85;C9625=7A7C87;C9627=6B6665;C9628=9E9EA3;C9630=6F6B6B;C9631=939096;C9633=8F8A92;C9640=526064;C9643=706760;C9652=63656D;C9655=827D7E;C9656=797675;C9657=676A70;C9662=555D68;C9664=3C535A;C9665=6E6C73;C9666=5E5F64;C9667=61616F;C9671=757784;C9675=625D64;C9676=656067;C9678=53525A;C9680=787C75;C9681=656466;C9684=5C5B5F;C9686=59575E;C9694=626166;C9697=645F5A;C9698=61625C;C9700=2E2D31;C9710=2E2F33;C9718=706E7E;C9750=323238;C9760=2C2C31;C9770=2A2C30;C9774=8D7E89;C9782=727277;C9792=585755;C9824=585B65;C9835=656060;C9849=768398;C9853=43484D;C9863=4B494F;C9870=565058;C9877=413E4B;C9884=5F504B;C9900=2F3A3E;C9902=363740;C9905=3C3D41;C9911=545358;C9913=3B3943;C9918=44423E;C9920=413F40;C9923=453F3C;C9936=3F4148;C9939=41454E;C9945=3B383A;C9948=36383C;C9949=46434A;C9952=3E3D42;C9954=3C373A;C9959=4D4951;C9961=4D484B;C9962=555257;C9967=404045;C9969=4C4D56;C9970=454347;C9971=46494B;C9975=313539;C9979=4F4E57;C9981=4A4D52;C9984=474F59;C9987=53554C;C9993=4D4B49;C9995=605E5C;C9998=525757;C9999=4D4F4E;W32819=D6FF02;W33826=70FF66;W74463=FF479C;W38717=252428;W73717=2E2F33;W32021=2B2E3A;W73457=2C2D3B;W32524=C7423B;W32707=A10134;W74498=F1DF65;W45998=AB863E;W32622=2A2E3E;W45999=B28E33;W43161=89A6CE;W32109=D9DCF8;W32327=976643;W32022=8F5F41;W43213=B89259;W43736=AA854D;W43189=ED93B6;W45845=7F2C64;W74548=BD1C6B;W45913=D46B9D;W49242=921D3A;W45940=9F173B;W43125=9A012C;W32625=B13347;W43486=4E2E3A;W32348=662B3F;W32676=672C43;W32071=962D3F;W45899=7F7AA3;W42654=898238;W45806=ABAB3D;W43399=4D3173;W32076=006F51;W32317=008680;W32756=008481;W45689=3B94AF;W43481=667DA2;W45374=667B9C;W32115=567391;W32718=26538A;W45789=53596E;W32018=43536E;W45667=364767;W32019=31323A;W32012=2D2F3F;W32863=EBE8DA;W74492=D8C8A8;W44346=91887D;W43267=777168;W43215=867970;W43573=8A7967;W43307=9B8270;W32168=927962;W32864=937B69;W43503=47313A;W32068=40322F;W45697=5C4843;W43200=534141;W32084=8F8990;W45779=818591;W41824=858284;W32432=9C9DA6;W45788=7A7E8A;W31884=A1A2A5;W32872=5D5A61;W32002=2D2C31;W32189=554E56;W43194=5A545C;W32103=433D39;W32137=41424B;W45715=484B4E;W32008=4F5059;W42639=4A4846;W73028=323135;W44942=2F313B;W40968=29303C;W43370=342F3C;W32456=2A3244;W32705=36373E;W43277=33354B;W45736=462D39;W48746=352E50;W44156=3D2C50;W32014=3D3A3B;W32746=383C41;W32304=433B3B;W32250=3A3C39;W32978=453839;W43491=47393A;W32025=3E3733;W73456=373B47;W32785=2D3B46;W32095=47323D;W32619=32374C;W43421=37374F;W43075=3E314F;W32131=5A2C3B;W32092=592F36;W32444=5C2837;W32082=452C58;W32053=3D3E46;W32633=423D45;W32261=45403C;W43265=4B3C3E;W44105=32414A;W32010=513E3A;W32096=32443F;W45861=463E51;W45858=3D3F53;W43303=274842;W32030=2F3F56;W45739=5A313E;W43495=5A3A33;W45733=563242;W45859=2B4263;W45724=3B3B5F;W45921=4F3758;W45735=563654;W45732=5F2F43;W43257=602B3E;W44155=2B3D64;W43258=642E4A;W32091=632C36;W44154=692255;W32697=751B34;W45655=464445;W45696=4E474B;W45726=55433E;W44970=33484F;W45758=464937;W32308=394B59;W32148=38495B;W43413=564054;W32215=354A5D;W32535=39435D;W45934=4C3E59;W48587=573F57;W32199=1C4E59;W32119=653A3C;W43659=1B513B;W32314=004E6C;W32587=39456C;W43671=603559;W45731=663651;W45920=5C3564;W32031=6B312E;W32257=6F3532;W45670=30437A;W45926=58376B;W32803=682B55;W32760=742734;W43004=841B37;W45714=4F4F50;W31013=464C50;W32424=51484F;W32038=504844;W32688=514C58;W43476=4C4D44;W32192=424A58;W45867=56493D;W32066=504D3D;W43183=624842;W32114=564737;W45698=62483A;W43555=5F4B3B;W43070=33526C;W43233=643E53;W43165=683D47;W32357=6D4541;W32067=624235;W42629=1E5850;W44229=11575D;W43236=524166;W43494=6A4036;W43477=664033;W45668=2D4874;W45671=424B7B;W43311=42457C;W45945=7C3B31;W45734=822650;W45992=832949;W45703=82253E;W32208=833038;W32703=6F2E71;W32700=8C2440;W44119=8F193A;W43446=585258;W42686=53515A;W42643=4F5957;W73477=505560;W32028=5F544E;W32126=43535B;W32975=4E5662;W43852=604E49;W32214=565144;W32164=535145;W45711=565568;W32977=515644;W32371=3E5754;W43255=635063;W45694=695349;W32144=4A5641;W43475=395A66;W43444=4B546F;W43471=4C5471;W45702=6E5143;W45699=674F3F;W32167=50593A;W45660=26576B;W45942=75414A;W32033=585B35;W45754=226251;W43483=7A3B4C;W45884=7B493B;W45965=794A3C;W45980=00606E;W48583=664675;W45844=863D52;W45944=7A3C3F;W32698=165784;W32349=275182;W33738=26558A;W45930=4D4680;W44118=743B6F;W32671=813C68;W32130=873A3B;W44112=614789;W45919=71376F;W32052=8E2642;W32925=912C40;W45856=8F2D39;W43463=5B5E65;W45713=5E5A61;W32870=5C5C65;W42659=675A57;W43473=645951;W45695=695752;W43445=6B5A56;W45757=545C51;W43251=4D636E;W45923=695769;W32003=665F4F;W45657=4E5971;W32117=6F5148;W32438=6E5844;W45865=645C42;W32016=3A5F6F;W45659=435975;W32615=7B5349;W43058=785647;W32421=5A577D;W32804=006A72;W45665=426088;W45728=874A52;W32738=7D553F;W44349=246A59;W32244=006966;W45664=2E5E8C;W45964=83463E;W32060=815338;W45681=0C618C;W44114=365E93;W45798=465790;W45928=6F4D85;W44120=884F37;W32523=156D4A;W45931=555192;W45914=9F345D;W32331=9D2158;W32328=9D1A6E;W44338=A7014D;W45796=A81448;W45941=A81940;W32184=A12437;W74857=881988;W32024=AE1F39;W32326=A81433;W32744=AB1231;W32591=AF2432;W32013=6B676A;W32475=626765;W32086=64636C;W32628=6F665C;W32812=606779;W43009=5B6273;W43448=5E6475;W45750=5F6755;W32815=496674;W32221=81615A;W38678=4A6E6F;W32241=536981;W43256=7F5359;W45961=755D4D;W32829=496B5C;W45661=486B81;W45922=775670;W43478=7E5871;W73438=7A5D4A;W45869=706144;W43201=496D57;W45743=7C526A;W43851=815749;W74497=7C5844;W32147=7C5A43;W32255=8C574C;W45887=8A5E45;W45888=8C553D;W42441=895942;W45979=007686;W32354=3E6299;W44309=506099;W45933=5E5F99;W43981=5F5993;W43232=9A4553;W40967=835830;W43997=805F31;W45680=00659A;W45672=0066A0;W45675=3B5FA2;W39766=1B60A6;W45729=A64253;W32835=935B2D;W32075=007C4A;W32689=00784A;W74303=00754B;W73958=A64A30;W45721=AD3273;W32701=B32063;W45879=A84826;W43300=AF2669;W45797=B70156;W45878=AC4625;W32321=C30B43;W32620=B1222E;W32044=B3262A;W32159=737178;W43428=716C6A;W31016=796A74;W43489=806E64;W45960=786860;W32627=806D60;W32107=7D6C5E;W45746=587774;W43223=627386;W45740=84626A;W43329=82645E;W45962=81655D;W45863=79725C;W48366=696E53;W42084=886856;W43137=8C6856;W32598=567094;W43254=935B5B;W32733=476B91;W43008=4D6E92;W45742=836542;W45751=60764B;W32043=13778E;W32776=177796;W43985=4F699B;W43238=985975;W43754=87643F;W32074=896B3E;W44121=00788C;W45814=00808F;W32712=A54E69;W32437=9B5F47;W32288=96613F;W45762=007C68;W43299=007F7A;W44310=825CA2;W45939=8E5495;W32679=94528A;W43252=A65348;W32073=8D6730;W43979=7F6828;W45752=687B3A;W73658=487A3C;W43980=A94E79;W43006=9C5F35;W32453=916A2E;W44340=BB425C;W32047=B34A47;W32004=AC3581;W32867=BC2368;W38425=C92C2D;W73013=CC2130;W74335=D52B23;W45783=777576;W43469=7D7373;W45792=747874;W32085=74717D;W45866=7C776D;W73189=68797C;W45777=7B7485;W32386=877371;W45975=85796F;W43057=827568;W32858=68768C;W43490=92746C;W43207=8A6E63;W32426=6D8370;W45988=5D818D;W45901=797391;W43224=8F6B7E;W43318=947363;W32078=697A5E;W73476=528587;W45989=4A7B86;W43253=916A5B;W32101=96745F;W32029=907960;W44088=4B7F72;W32802=7F6D97;W32213=947459;W45846=A76475;W44148=497CA5;W44000=6570A8;W32099=8E744A;W43496=B25766;W32481=9C6B46;W45769=907741;W32041=008D7E;W44108=008891;W32529=00899B;W44003=0081A5;W48800=0086A9;W45990=9D5A9A;W32862=A36B44;W45719=C5516E;W32761=A16D37;W32046=51893F;W43305=218A54;W44334=008D6E;W45722=BF4F8C;W45977=C94C58;W32329=C6448A;W32706=C63C70;W32032=BA5F37;W45873=B15F2C;W43999=D83659;W32800=CA4141;W45943=C54E38;W32759=DB1B62;W73518=CB4D27;W32111=D3411B;W45782=828383;W43218=7E8988;W32110=88857E;W43308=8C7D78;W43447=798A87;W32163=8E8376;W32007=888374;W43492=947D75;W43230=938076;W32580=8E7A6D;W32058=74869B;W32135=83819B;W45793=948099;W32017=92806C;W32805=6C8B7D;W44094=827C9B;W32787=9A7E6C;W45804=9C7690;W43206=9D826B;W43289=6D84AB;W43025=A3708B;W45727=A87670;W43328=A37D63;W43407=627FAA;W43470=B57172;W45706=AD6D67;W45682=5686B0;W45932=7A7AB1;W32035=9974A4;W32113=A17A54;W32140=AD7255;W32752=2B9981;W32265=0095A8;W43306=0097AD;W32673=A5639D;W32195=C26169;W45892=8D8540;W44150=009381;W48585=C65575;W32492=CE5D71;W32185=AA733D;W33494=4F9754;W45707=CA5565;W48588=D45464;W45909=CA4F89;W45911=CE528A;W32589=DA4586;W45877=C86E41;W74499=C36A37;W44093=BC6D2F;W32611=B47231;W32758=E2437C;W38677=E05448;W45881=D5582A;W32610=929496;W45780=888D94;W45823=978B89;W32380=978B80;W32479=8A9689;W44006=918CA1;W43994=6F8F92;W43323=8593A9;W45949=8C947C;W32474=AA7E79;W32429=77927A;W43245=59959C;W45815=B2816F;W45957=A2855F;W44005=959768;W32061=CB7988;W44140=9E9660;W45985=269C99;W32252=AF7F56;W43190=239DCC;W45850=CF6779;W43248=C97165;W43188=D27864;W32608=BE8355;W32045=AF824D;W45708=D76975;W45950=DC6C6F;W32064=C48054;W32983=00A079;W43066=15A077;W44617=00A585;W45912=DE6196;W32590=E06B68;W32604=D57B58;W45882=B6813D;W32248=E85A6E;W38130=00A671;W32626=C57E28;W45876=DD612A;W32298=E67112;W45833=AE8E92;W43211=7E9DA2;W41866=B39989;W44008=759CA2;W33339=B49984;W43415=A8977D;W45686=869ABB;W32588=AC94B7;W43195=AB95B7;W45819=62A1A1;W32704=B7987A;W32725=56A7BE;W32430=6FA1CD;W45896=D28F7A;W32197=4BB1B7;W38445=6B9BCF;W45803=B58ACB;W43502=D57696;W42652=5DA777;W45987=17A7B3;W45838=D97E75;W32436=D88A6B;W32097=CC8C45;W44001=A19A37;W32319=6BAB52;W32165=7AAF45;W45875=E57841;W32089=617593;W32090=91635B;W32065=644738;W32080=5A6B86;W32009=415A71;W32023=AE9E92;W32079=244374;W32193=6279A0;W32238=7B4A4B;W32040=DD6B90;W32050=515979;W32127=E4D597;W32081=496D90;W32088=AD9889;W32251=7B5F4E;W31329=C2A594;W32001=E8E9EB;W32187=E6E4DA;W32036=9F9480;W32142=AA937A;W32158=B2A498;W32006=B5AC9B;W32059=274A7B;W32098=B6AB98;W32116=596172;W32160=CFAA91;W32186=EBDBC3;W32054=AA8D7E;W32225=B09180;W32132=964E6C;W74501=665D5A;W74613=568238;W32376=60687B;W49602=757C82;W32330=C6619C;W32601=D5D6C9;W32595=56453E;W32442=4C7695;W74502=7EC23C;W74741=129E50;W32579=63443F;W32637=435268;W32431=4981BC;W32374=C82D66;W72913=008D47;W32451=5E6A85;W32375=DC4422;W32388=73184A;W32564=BF3C71;W32606=A37343;W32594=774B39;W48942=5A595B;W45978=918580;W45948=989C86;W45953=A69E95;W45891=B0A955;W45854=93C9B6;W45847=355F69;W45862=7A7460;W32315=53463F;W74341=E3E910;W32734=B5A198;W45855=88C0B9;W45954=9E9991;W33807=FF694B;W32901=FF3251;W32603=C14B3D;W45996=ADBF68;W45982=006362;W32799=814437;W32699=413A6E;W32737=353752;W32713=FF8BB8;W32285=7D254F;W45852=90B08C;W32883=846EBC;W32645=9887B7;W32865=928968;W45997=C4C17A;W45984=00857D;W72199=2B2F35;W46290=70736E;W45864=7B765B;W32365=A8957D;W32879=8E84A7;W32653=785F9F;W72273=343539;W32339=37354C;W45893=7B7A4C;W48584=C3DAB2;W45889=A7A697;W74500=B4B6A1;W32789=74EB38;W45973=A99C9B;W32634=63483F;W33729=2EDD6D;W32979=DBA79A;W32970=CB826E;W72738=A9BA9F;W45765=8AFAAA;W32868=A79DB8;W32104=EAC691;W73245=696A6E;W73727=9FA66A;W32939=F2FF4F;W44918=FF6D93;W32522=FF9159;W32316=A18CA2;W32661=6D4577;W45684=729CC0;W43371=BE9A7F;W32708=B4A5C3;W32472=9C8A76;W48289=294034;W74535=56E585;W45787=6B727F;W43479=79CBC8;W45785=585A62;W45747=6D7F7A;W44364=CAAC99;W43220=87998B;W43634=D2FF67;W45748=787E75;W44312=9AA19D;W45710=776F7A;W43321=A88875;W43487=4F4039;W43045=A88F7C;W45776=7F7F84;W45679=0C668C;W38690=F0CA02;W43484=BAAB9E;W43684=B37E59;W44495=C8C4C7;W45791=6A7472;W45772=A9ADAF;W43488=3E3851;W42601=E8E89E;W44330=8E8BB8;W44335=693C7E;W45709=566972;W43123=C2A47B;W44510=60625C;W45653=808E96;W43498=F2DDC7;W32629=E4886E;W43216=A88B93;W32742=B9ADAC;W43177=8D9CB3;W43365=818A97;W45730=73665F;W43889=CAB7A2;W32743=78B2D8;W32597=96AAC6;W43178=334143;W45897=E3B490;W43276=98816F;W43493=3D3A37;W43225=A2ADC1;W43367=C7ACC7;W32818=8B9DB1;W43007=67646E;W45669=2F3A7F;W45693=9DAAAE;W43005=AB8C79;W43234=9C5054;W43472=926E58;W44009=E9CBBC;W43173=A39080;W42634=9FD38C;W43217=A592A2;W43482=B28F7A;W45654=61777D;W45771=9CA19F;W43219=84979A;W45972=7E6468;W44298=E1E598;W44804=BEC15E;W42661=766958;W45759=586255;W32930=825D3D;W43497=575760;W43292=705D9B;W43282=41463F;W45723=334A56;W43675=007D9B;W43227=8B5D3B;W45810=8BB1BB;W43474=403C46;W32297=4E483C;W45840=C7B9B2;W42984=0095AC;W44122=373467;W32112=8C8053;W45773=B3B9BA;W32313=544D4F;W45963=715753;W45756=5F7462;W32121=463F42;W38813=E5DAC3;W43304=2E2D3C;W32134=779FB9;W44226=52477E;W45958=AD8E56;W38676=E46337;W44146=CB2836;W45874=C56F25;W45817=70B6B0;W45895=E68F64;W45849=C85B88;W45718=B74767;W42128=726B73;W43656=BF8999;W44206=B49060;W43480=E86991;W43182=583B3C;W45745=005C57;W32366=4B4E56;W45906=E5BAB3;W32145=7EADC6;W45880=D9664C;W45885=A2534C;W45656=91AFBF;W45737=CA3B4A;W45658=58667C;W45820=67ABAD;W45837=A377A3;W44012=E9D9B6;W32196=83B49D;W32600=777551;W45836=AE6C2B;W45857=3D4057;W43222=856985;W45886=A76549;W45894=F2A26F;W45955=A68364;W33739=FF4593;W44013=B9C8D2;W45969=B79987;W45809=466B7D;W45774=B8B7B5;W45801=A099B3;W45917=973266;W33780=FF4A78;W32269=3C90B3;W45924=5E5264;W43210=72C5BD;W43051=5FBFA7;W32077=364641;W32981=58B4A7;W45770=A4A3AA;W43199=597997;W32499=9D989C;W32149=433F33;W33423=FF5021;W49484=933648;W45868=67543D;W43993=CED0E2;W32425=62C182;W45970=C09882;W43072=D78D8E;W44441=B9A5A5;W43815=BBB9B2;W45761=74917B;W45807=615E5A;W45677=4D78A2;W32593=9DC899;W73431=FF5102;W72067=B5FF17;W32057=B4B4BA;W45794=AFAEB4;W45832=B39094;W44109=9F3784;W43052=85B7A7;W43320=633D54;W32534=665E65;W32433=878490;W32284=96D8DC;W44103=364845;W32373=34939E;W45904=D4B0B0;W44117=354D44;W32363=383437;W32557=92765F;W45952=BAB8A7;W44919=FF9C0F;W44702=BAB3A5;W32702=2F4C41;W32102=395162;W44333=333A7F;W43301=6A1E5D;W43203=4C6388;W74494=9F724C;W33809=FFC855;W32908=E10142;W74493=E6A439;W43221=B38A8B;W44925=CF449B;W32136=7F7960;W32125=858587;W32141=809C6B;W32209=979796;W45842=75B2BE;W45938=653588;W45947=B2717E;W32005=73625E;W43391=988374;W42662=8E8380;W74201=EA9336;W32105=50493C;W45968=7C5E47;W32094=677E4F;W32087=707176;W73674=84746E;W44922=DF3989;W32182=6A8074;W32555=9BB174;W74496=8A5E33;W44366=4175AA;W44111=007152;W45824=D0C9BA;W32434=D6AED1;W30972=41B3CD;W44149=E47026;W73454=302F3A;W32011=4F413E;W45812=6A819D;W45828=AEA4A1;W45825=B4B6A8;W72594=333B3C;W45981=00666B;W45676=38488C;W44337=006F95;W45725=402E5A;W43039=5CA8CF;W45753=6B743C;W43990=CFEB77;W32841=B8FF63;W45764=2FA962;W32239=3A6156;W45918=8B6772;W32654=215E44;W73915=EE532D;W43983=3F6E9E;W32093=6C5C5D;W46083=CFC3AF;W45784=807878;W45907=E2CBBE;W32982=35AB7D;W31197=435453;W45935=524090;W45905=E9C1C4;W32240=228265;W30876=008BBD;W32200=005F6E;W45755=194746;W45738=00AD92;W45802=B19BB7;W32279=3D664D;W32602=808E68;W32347=3B5D42;W45937=573788;W32083=75767B;W74342=70CB30;W32980=EFC8BF;W43237=766668;W43672=006D5A;W45967=896340;W45763=008D4B;W32377=968885;W32177=3C7E80;W74495=B99A62;W45691=35A8B7;W45956=C29F8C;W32020=8E8C91;W39675=009CA6;W45925=806999;W43249=224F53;W45976=CBBA9F;W43226=584242;W45860=1F384F;W45795=A8E182;W32312=AF383B;W43485=474B62;W45651=BAA7B4;W45800=A99CB2;W32055=94ABC0;W32449=BAA089;W32139=89B4A7;W73482=C0A588;W44007=8FB195;W73475=C4A780;W40605=94A2D2;W32435=CE8BAA;W45883=C8A070;W45768=69BB9A;W32480=E284A4;W45872=CFA768;W32034=D49D4F;W44643=E68F18;W32324=E79D02;W32042=A9C0C0;W32049=A3B4CA;W32056=9FB6CB;W45834=C9A3AE;W45685=ACB4D3;W32037=C4AA95;W44301=92BFB2;W32166=EAA6B5;W45652=E0A697;W32414=D5B294;W32264=E599A5;W45902=E49CA2;W32063=D8B18A;W32210=6CC3D4;W32716=E9A3C0;W32216=EB9C94;W40971=D1AD7F;W45994=C3B27B;W45993=BCB17A;W32596=F69C9F;W45995=D0B354;W44306=A4C744;W32072=EAAD31;W32463=FBA614;W42696=C4BFBA;W32504=BBC1C9;W45830=D0C3D7;W32253=CDBFB2;W32881=CFB8AC;W32427=ADD2C6;W45851=B6C8A8;W32048=F0B5C0;W32599=DDBD9F;W45818=98D8D3;W32070=E3BC88;W44147=EDB842;W32069=EFC429;W42599=EEB902;W32343=DEC8D2;W45908=E1D0CD;W44500=E6D6C9;W43991=BFD8E5;W32146=CDD7C2;W32039=EBC4D2;W32605=EDD6A6;W44010=CEDBA8;W32183=F1C599;W32062=E6CC7B;W32711=EBD47C;W73027=F1D741;W74485=E4E251;W72815=EAE951;W32775=F4D130;W43010=F5D414;W32878=E1DCDE;W43595=E8EAE1;W32296=E7D8CF;W38814=E7EADE;W32674=E4E5D3;W45853=CAE4DC;W32497=F0E1CA;W43402=F3DC81;W32607=E6B776;80000=EDE7E5;80001=EDE6E5;80002=EED7E5;80003=E8E8DF;80004=F1C9DB;80005=EBCFD4;80006=E6DED4;80007=F2EDC6;80008=EBC2D2;80009=E7BDD4;80010=E3DDCF;80011=EFE0C7;80012=EFEFF6;80013=F1EEBF;80014=F4DDC9;80015=EFC4C3;80016=EDDFC9;80017=C6D6DB;80018=D3B5D1;80019=FAC4CC;80020=C2CCD6;80021=F1DEC8;80022=C4C3C6;80023=F5DFC1;80024=F3CBC5;80025=C7A0CD;80026=D5D2CE;80027=ECA9C3;80028=F6C6C1;80029=C2B9D9;80030=E5D9C6;80031=F1E5B0;80032=E6D3B5;80033=AEC4D9;80034=B7BEE4;80035=B3ABD1;80036=DAD1C5;80037=AEBEDA;80038=F3DCB6;80039=BADBE7;80040=C1B5CD;80041=CEC9C4;80042=CAC2BD;80043=CAC6C0;80044=AF9FD5;80045=BCD2E7;80046=C8C2B9;80047=D0C7C1;80048=A9B4CF;80049=A2BAD4;80050=B4C7B5;80051=BFE3EA;80052=C5A0C0;80053=B7B5C3;80054=D9C9B2;80055=F3B1CF;80056=B5B8C0;80057=D1C8B5;80058=F7D4A9;80059=A3B4D5;80060=DFA9B2;80061=A1ACD8;80062=D6BEAE;80063=D1C9B9;80064=ACB5D0;80065=C3BFB9;80066=F6E89F;80067=C0E3C7;80068=C7BCB1;80069=EAD1A9;80070=A2C5DD;80071=C9BFB7;80072=BEBAB7;80073=CE9EAE;80074=F5A6AB;80075=F4E596;80076=98B1D3;80077=F2C4A5;80078=B0B5B9;80079=96AACF;80080=A2A1CE;80081=BDA5B2;80082=99B8CE;80083=AFB9BC;80084=9FB8C7;80085=B9B0AA;80086=BEA3B3;80087=A39CCA;80088=9C9CD2;80089=F9D598;80090=C6BBB0;80091=C1B8A5;80092=CE8AAB;80093=F2BDA5;80094=C1DAA4;80095=AEB2B8;80096=C4BBAD;80097=E490A8;80098=D083A6;80099=98ABC2;80100=9F90C5;80101=9BC4C2;80102=AB94B7;80103=DAB9A0;80104=B6DAAB;80105=D1B8A7;80106=92A3C8;80107=BBB4A0;80108=BEB9A6;80109=BCAF9A;80110=E493A2;80111=DF84A4;80112=B4B5B1;80113=93B4BA;80114=CBBD9F;80115=A491B9;80116=97AAC1;80117=F2A696;80118=A1ADB2;80119=A4A8B1;80120=A5A0AC;80121=91A4B4;80122=AFA8AA;80123=E3C294;80124=A5A8A9;80125=9D9EBC;80126=F08D9F;80127=91C0B1;80128=BBAD9E;80129=B9AAA3;80130=A5A5A7;80131=98A7B6;80132=D4C68B;80133=8DB2DC;80134=ABABA3;80135=977CB5;80136=BAA89F;80137=AEAA9F;80138=A09FA9;80139=8BB7D4;80140=ADA69E;80141=BEAD9C;80142=A7B28F;80143=90C7E5;80144=AAAFA2;80145=BAAD99;80146=E5C785;80147=8A8CBA;80148=BB9897;80149=AEB19C;80150=BAB09B;80151=C58E96;80152=838DC7;80153=A29B91;80154=8F9AB3;80155=9EB1E6;80156=B3A599;80157=A8A29F;80158=EDB889;80159=839FBE;80160=99D0DC;80161=98AAA5;80162=F4DD88;80163=99A2AA;80164=93CFD2;80165=E6AF8E;80166=B0A799;80167=A79F98;80168=AF9E8F;80169=7F92C3;80170=A99E99;80171=A3A298;80172=80A4C3;80173=B7A491;80174=9DCB9C;80175=F9C686;80176=A09C9E;80177=ACA298;80178=A8B9F4;80179=A89E8F;80180=C2B08D;80181=C4B48B;80182=89989F;80183=B4937F;80184=B8A78E;80185=C7DA7E;80186=E285BB;80187=8079BA;80188=A89C8D;80189=868AB5;80190=8A76A3;80191=9299A0;80192=AA9C96;80193=EFF0FF;80194=818FBB;80195=96A690;80196=B09E7E;80197=8993AE;80198=91928E;80199=7E8CB9;80200=FAE472;80201=92979E;80202=8C8C95;80203=A89892;80204=AB988A;80205=A39793;80206=AB8F7B;80207=D96E9B;80208=9FA396;80209=F9C971;80210=B1A38C;80211=9F948B;80212=8D9492;80213=978A7F;80214=868896;80215=A4998C;80216=9D9184;80217=898E98;80218=8BA6D9;80219=AAA68B;80220=9F7F91;80221=C79F8B;80222=799DCF;80223=A9B578;80224=C4B27F;80225=7290A4;80226=848C8C;80227=7D9A9E;80228=C0A887;80229=80CAC4;80230=9C9592;80231=ACAD7F;80232=7BB3C6;80233=C9A67E;80234=E472A6;80235=ED7B9A;80236=8A9093;80237=BF7084;80238=8F9197;80239=7F91A4;80240=6C94C1;80241=728EB9;80242=E2AB70;80243=8C8B8E;80244=CAAE7E;80245=B07886;80246=D86786;80247=939492;80248=C8A582;80249=8767A0;80250=A59587;80251=C09D73;80252=8064A4;80253=F2A87A;80254=83CAA8;80255=9D908A;80256=A79B86;80257=E6B66F;80258=EE8977;80259=81899D;80260=A29180;80261=A49381;80262=7986A5;80263=6B91B8;80264=97988B;80265=858385;80266=989887;80267=9F957D;80268=849788;80269=A09383;80270=687BAE;80271=80848A;80272=A39484;80273=7A868B;80274=D8827A;80275=949087;80276=828089;80277=A1C26C;80278=707B92;80279=706DAC;80280=95947A;80281=817D87;80282=6B8B92;80283=CB6093;80284=98887E;80285=86818A;80286=819087;80287=88868B;80288=7D7E8A;80289=707F9C;80290=79908D;80291=649FAF;80292=A98E7A;80293=6683A9;80294=72B09F;80295=6872A6;80296=718197;80297=82848C;80298=7B6D8C;80299=CCA769;80300=A57E76;80301=717883;80302=99907C;80303=BECC60;80304=948A7A;80305=718896;80306=679FA4;80307=747D8A;80308=858388;80309=93837A;80310=B8BE5C;80311=A08A77;80312=7B8A83;80313=66BDD9;80314=75757D;80315=9D6D7D;80316=687785;80317=C09070;80318=97857A;80319=5C83B2;80320=92827D;80321=8D8076;80322=757E82;80323=82807D;80324=5C748C;80325=A58B61;80326=7C736E;80327=988978;80328=B89B71;80329=EFBC5B;80330=9C897A;80331=7F8384;80332=769B6D;80333=CC5567;80334=7F7E83;80335=73BEA2;80336=CA676E;80337=918477;80338=E86492;80339=74737B;80340=828083;80341=6478A9;80342=7F7D7E;80343=878176;80344=B98270;80345=83847E;80346=667FA2;80347=698AC2;80348=667C8D;80349=A38A73;80350=807F79;80351=86826F;80352=8B8175;80353=668483;80354=938574;80355=D9FF45;80356=787665;80357=72767B;80358=8F7B70;80359=96886D;80360=5D779E;80361=6C6A75;80362=BA4775;80363=777374;80364=707075;80365=F1C24B;80366=838376;80367=586881;80368=A6846B;80369=DB5773;80370=F5AC4E;80371=FCDE3D;80372=937F6E;80373=5A689F;80374=777374;80375=81766C;80376=816774;80377=9D856E;80378=7D9161;80379=5584AF;80380=817676;80381=626F86;80382=AE5A6A;80383=6C7D80;80384=CE6C66;80385=657278;80386=838560;80387=957D6A;80388=BB4A66;80389=9C876B;80390=7F756E;80391=6A6D77;80392=597775;80393=5A6F77;80394=6F7381;80395=747370;80396=91806D;80397=5370A3;80398=E7705D;80399=646A76;80400=957868;80401=7D8464;80402=E7E6FF;80403=526384;80404=C49554;80405=B88D5A;80406=EDB242;80407=505E78;80408=8B7B67;80409=50699D;80410=8A7769;80411=4F6678;80412=6A6B6F;80413=5F6988;80414=5778B2;80415=696D77;80416=6B6973;80417=7D7266;80418=727F6E;80419=DB775A;80420=4C6182;80421=9C7760;80422=4C6C84;80423=566172;80424=6D6966;80425=79666A;80426=6E6B6E;80427=6C6C6A;80428=50909C;80429=767469;80430=807266;80431=7F6F6B;80432=6A6E67;80433=807269;80434=86725F;80435=7B4767;80436=637A69;80437=6E6964;80438=646166;80439=507376;80440=897762;80441=626877;80442=5A4387;80443=AAAA44;80444=495779;80445=477477;80446=847867;80447=F9B132;80448=466D95;80449=5E7BBA;80450=B86A56;80451=5B726F;80452=776F63;80453=6D6863;80454=8E715B;80455=947960;80456=F6B334;80457=807161;80458=EE8141;80459=8A7A60;80460=736A61;80461=405A74;80462=96735C;80463=7E6959;80464=63675F;80465=425472;80466=635E67;80467=6A6263;80468=D25E4B;80469=703E61;80470=88545C;80471=81765B;80472=6A666D;80473=A87E57;80474=487BAF;80475=44A7BE;80476=5D5C67;80477=6F6E5B;80478=7D6E5E;80479=415A67;80480=595874;80481=656361;80482=676454;80483=606266;80484=AA3459;80485=484C6B;80486=7D675B;80487=7E775C;80488=575C66;80489=6C4D5E;80490=806B5E;80491=E48D41;80492=606D58;80493=525964;80494=DFDCFF;80495=EE9833;80496=48586A;80497=714E5D;80498=3D679B;80499=6B6562;80500=5B5A5F;80501=716C63;80502=605A5D;80503=A03E7C;80504=5D5C5E;80505=3E586B;80506=535759;80507=6D675E;80508=EF9335;80509=3B5271;80510=866B56;80511=4A4E66;80512=DC7D4B;80513=893D58;80514=786757;80515=56575D;80516=969F3A;80517=585455;80518=736E57;80519=595C62;80520=B95050;80521=5D645B;80522=605B54;80523=3E5070;80524=495463;80525=746357;80526=59565A;80527=66B149;80528=6D5755;80529=EDEEFF;80530=3A516C;80531=6A6160;80532=6B5E58;80533=6D6054;80534=655A57;80535=59595D;80536=4F556A;80537=706254;80538=5C5E67;80539=3F8E95;80540=418990;80541=8D6741;80542=976C4E;80543=7F6854;80544=642C5F;80545=59634F;80546=816350;80547=B53A49;80548=6B5E51;80549=3D5780;80550=6B5E4A;80551=766F65;80552=3E4D64;80553=465488;80554=4F4D55;80555=585958;80556=4B405D;80557=324D66;80558=795D51;80559=4B3C73;80560=5C5B57;80561=A73E4F;80562=615852;80563=5E5E56;80564=444C5D;80565=80684E;80566=CD5B41;80567=3F4A65;80568=485B53;80569=726057;80570=4D7E51;80571=42515E;80572=5C5D52;80573=5A5154;80574=4A4F5A;80575=E7E8FF;80576=83614C;80577=635D52;80578=39495E;80579=4B4E5D;80580=574E45;80581=5F5E4E;80582=AB2B65;80583=5C5B51;80584=9D6A4C;80585=EAA402;80586=4A4D56;80587=A67B3E;80588=85763F;80589=72624F;80590=645351;80591=374765;80592=D65137;80593=E27936;80594=6C564D;80595=9A6D43;80596=545856;80597=C73647;80598=279394;80599=3C475C;80600=B07837;80601=555B4D;80602=575B4E;80603=3A4160;80604=805A48;80605=782952;80606=B22C44;80607=4B4F53;80608=395052;80609=453B5A;80610=765649;80611=67464C;80612=4C4E51;80613=514E4D;80614=2C5B8B;80615=60554E;80616=4F4D4F;80617=474A50;80618=5D3C4B;80619=BF473D;80620=55534D;80621=59584F;80622=314767;80623=4B4A50;80624=AC286A;80625=5E5048;80626=5B544B;80627=55534D;80628=3A4452;80629=514F4D;80630=BC433F;80631=4A494F;80632=55524F;80633=43494F;80634=33405B;80635=424851;80636=504C4B;80637=1C89B6;80638=785943;80639=297EB4;80640=188FBA;80641=354059;80642=973641;80643=3B5686;80644=32425C;80645=874443;80646=304B78;80647=4A454D;80648=9E6539;80649=45464D;80650=444D4C;80651=434451;80652=42454A;80653=614F48;80654=454F4A;80655=4B5149;80656=6B5D43;80657=733746;80658=375147;80659=723146;80660=9B513B;80661=3E457D;80662=753243;80663=363A5A;80664=564E4B;80665=715A45;80666=675048;80667=44444A;80668=303D5D;80669=4A464A;80670=3F454D;80671=424B46;80672=393B55;80673=8B2642;80674=3B4154;80675=6D3445;80676=3D3F6E;80677=454748;80678=42414E;80679=943142;80680=41414B;80681=3E3F62;80682=374055;80683=323C54;80684=2D3D5B;80685=5A4B44;80686=303D52;80687=3F444D;80688=3F65A6;80689=42464A;80690=4D4E46;80691=364151;80692=AA6832;80693=6F5143;80694=474A47;80695=303F58;80696=AB243C;80697=B92743;80698=803641;80699=534646;80700=654E44;80701=514B45;80702=454545;80703=565145;80704=424147;80705=3B3E4B;80706=4B3347;80707=3A3750;80708=225284;80709=C44B34;80710=404049;80711=823141;80712=514B40;80713=424647;80714=5F584E;80715=514643;80716=875C3A;80717=675042;80718=33404C;80719=7C433E;80720=6F4F40;80721=433F43;80722=2D4052;80723=722A43;80724=E88702;80725=39455D;80726=BD652B;80727=38424B;80728=2F3B57;80729=434248;80730=4D4443;80731=343976;80732=0094AC;80733=A72B35;80734=7E5A39;80735=31364F;80736=393667;80737=83313F;80738=544B42;80739=463547;80740=314276;80741=1B8495;80742=3E374A;80743=674F3F;80744=484143;80745=2F3F4D;80746=C4372E;80747=464A44;80748=353B4D;80749=1D669C;80750=8F273B;80751=7E513A;80752=722F3D;80753=B41C3D;80754=544B41;80755=443147;80756=444045;80757=313F71;80758=383C46;80759=274968;80760=4B4A41;80761=444646;80762=9E1641;80763=343C47;80764=3A3E45;80765=4F413D;80766=464A3D;80767=61473E;80768=354442;80769=7F2A3D;80770=504542;80771=855B38;80772=B60F5D;80773=443F42;80774=2C609D;80775=6E443A;80776=8B213D;80777=2F3652;80778=9A1335;80779=754C3A;80780=FF4030;80781=5E403D;80782=313648;80783=9C0E43;80784=463042;80785=70223E;80786=56373E;80787=47453F;80788=56423F;80789=38384A;80790=55453D;80791=394B3A;80792=65433B;80793=4D3A3F;80794=3C2F74;80795=5F3D3C;80796=33374A;80797=AC2038;80798=31384A;80799=503C3E;80800=8D2C39;80801=343668;80802=911D37;80803=855732;80804=961837;80805=44453F;80806=393A42;80807=404042;80808=A63435;80809=393D43;80810=58313E;80811=80293A;80812=985933;80813=48423D;80814=4D363E;80815=47443F;80816=932A38;80817=762C42;80818=50313D;80819=C6452D;80820=5E2B3C;80821=2E364D;80822=45353F;80823=4E423C;80824=343842;80825=392C45;80826=1C855B;80827=343944;80828=A11935;80829=41403E;80830=433541;80831=3C3C3F;80832=3A3642;80833=881F3C;80834=373645;80835=42333F;80836=BB2632;80837=50443B;80838=34423A;80839=A84031;80840=553F3B;80841=2F3448;80842=8E1936;80843=472C3C;80844=3B383E;80845=4D393C;80846=303546;80847=41413D;80848=2D3346;80849=245281;80850=28403D;80851=B21652;80852=474A39;80853=38393E;80854=313344;80855=344385;80856=31353F;80857=6F3738;80858=00709D;80859=4E403B;80860=373C3E;80861=44453D;80862=7B2339;80863=2C3943;80864=2D4383;80865=931A5E;80866=303743;80867=931735;80868=007C7B;80869=473F3C;80870=2E3B68;80871=4C3839;80872=6C2937;80873=AB133B;80874=A0013F;80875=432F3B;80876=343643;80877=274745;80878=732736;80879=303440;80880=552F38;80881=333541;80882=47443F;80883=313F39;80884=444138;80885=423B3B;80886=32383D;80887=34343F;80888=462F3A;80889=313440;80890=423739;80891=403438;80892=403239;80893=483D37;80894=2E3642;80895=3D3336;80896=37353D;80897=A11F30;80898=33373D;80899=303342;80900=37363B;80901=4F2B38;80902=31333C;80903=363B37;80904=313B38;80905=2B2E46;80906=3E3C39;80907=433C38;80908=3B3839;80909=4F3D37;80910=822037;80911=343639;80912=5B2838;80913=3F3A38;80914=514536;80915=36373C;80916=3E373B;80917=602935;80918=3C3A3A;80919=2E3041;80920=2A4E8E;80921=373538;80922=2D2F3F;80923=632434;80924=A50137;80925=31353A;80926=30313B;80927=B90F3E;80928=343439;80929=007B9C;80930=333036;80931=2C3D7C;80932=2F303C;80933=38343A;80934=483F37;80935=2C2D42;80936=254741;80937=1F754C;80938=413936;80939=2C333D;80940=3D3535;80941=2B2F3D;80942=4C2B36;80943=2F3936;80944=264438;80945=602633;80946=552736;80947=28417C;80948=532A2E;80949=5D2134;80950=2D2B37;80951=20483E;80952=3B3534;80953=5C2D32;80954=672333;80955=3B3335;80956=323336;80957=2B2C38;80958=2C2F39;80959=2F3036;80960=95012F;80961=3B2936;80962=322F37;80963=303138;80964=006362;80965=2A315B;80966=2C2D32;80967=313135;80968=333434;80969=1C5445;80970=312E34;80971=761C31;80972=433230;80973=2D2E32;80974=412733;80975=2F2E35;80976=432932;80977=2D2D30;80978=3B2F30;80979=006346;80980=6E2331;80981=2C2E36;80982=1D4C4F;80983=302F32;80984=135246;80985=2B2E36;80986=2B2F37;80987=322F32;80988=00683E;80989=3D3333;80990=006955;80991=2D2E37;80992=393730;80993=3F3A31;80994=2C2D32;80995=3E2C30;80996=2C2C30;BLACK=303034;NTRL=EDEDEC;WHITE=EEF1FF;00621=545154;01716=EFEFFF;01AZS=8E7B6F;01RJX=59565B;02122=CBCDC4;02405=D56436;02716=F1EFEB;02818=F7C173;02847=A0B7D4;02912=FBC04C;03013=A5A3A3;03021=9A9C9E;03432=7F9EC4;03815=E49343;04212=908678;04417=A88E71;05012=6C6D6D;05033=7B7F83;05132=6E787D;05715=A4783C;07115=534F4D;07411=6E4C3C;07CTT=C6B4A2;08215=513E3E;08535=284163;08JSR=2C3340;09133=272D33;09241=2E303D;09341=2A344A;09750=2A2A2E;112QZ=8E837D;22NQL=303342;24UJX=BB9983;31CQY=CC4759;32253=CABDB3;32688=4F4B54;32738=795543;32812=5B6072;32930=805939;38CYU=3C7F51;41824=8E8B8D;43194=524F55;43227=7D593B;47YMF=A9564B;48WQN=946B47;491QJ=313135;57DTP=B25032;580QL=747D8A;60DTP=804838;610QV=77353A;61UJV=807C7E;63CJV=8F6949;64AZS=7D4E36;64QQL=585958;66KQM=C1986D;68DTP=A46A30;694QL=3A516C;71AZS=5E3A34;72273=35353B;724QL=39495E;749QL=9E6539;754LC=888892;80CSE=2F313D;820XR=A16A3C;822QL=855732;85UQY=333D4F;86EQW=48474C;870ZS=9A323E;875ZS=B24432;87YQS=00824D;880ZS=75593F;881ZS=B06C49;884ZS=50576A;886ZS=473D3C;889ZS=A28E6B;8975I=35435A;8975K=2C3340;89GSR=82553A;89QQS=A68D64;906ZS=817B6E;93BZS=4E494A;93LQV=8A583B;AM18L=86593C;AM41X=7F817D;AM74Z=865538;BE401=292D39;BE402=2C2C39;CD401=2F313B;CG310=273143;DA101=373538;DB101=393438;DB102=393436;EA301=3A3A3E;ED106=403935;ED305=363B44;EF101=48343D;FB401=403F45;FC304=3E4048;FC402=433E46;FD403=423E49;FF208=32453E;FF308=364150;FG402=3C3E53;GA101=484548;GE206=3C4A45;GM109=6E332E;HA101=4E4C4F;HA102=4D4C4D;HB202=4A4E4D;HC403=524A51;HE307=464D5A;HG112=584A3E;HH114=5A4A3A;HI112=614739;HN106=7E303C;IB201=545453;ID305=4F545F;IE108=5C524C;IE306=4A5561;IF402=525265;IG110=635047;II113=674F3F;IL111=774639;JB402=5F5A60;JC104=615B59;JF107=6A5853;JG115=625C4C;JI110=73544A;JI115=6D5845;JL115=7B523A;KA101=666367;KF204=616759;KF309=5C6476;KJ114=7C5E4B;KJ119=726347;KK115=805D46;KL119=7D5F3E;KN120=865B33;KP121=8F5627;LJ113=886654;ME302=687C7E;MK117=917256;MN117=A26A49;MN118=A06C48;MN119=9E6D46;MO119=A46A41;NC204=7B8585;NE110=888278;NF201=888375;NG201=878471;NG308=728498;NK108=AA746E;NM120=A27C53;NP125=A87A3C;NQ124=B27537;OA100=8E8E90;OM114=BA8066;ON120=B58459;OO120=BB8154;OO123=B3864F;OP120=C27E4E;PB401=9A99A1;PI114=B09581;PK105=C6888D;PR126=CF8C42;QI115=BCA38C;QO125=C8A264;RF201=BBB5A6;RI114=CCB09A;SC105=C6C3BF;SF111=CEC1B4;TF110=DFCFC4;UD202=E1E3DB;UF203=E1E4D3;UH116=EFE1C9;BK27P=EDEBE4;BK59S=966B61;BK68E=475446;DD78Z=593E36;EUR00414=4C4B4B;EUR00428=9D0131;EUR08955=3B3535;FM93X=A07350;FM93Y=B08C78;FM98G=C0853C;FM98H=9D8C7C;FM98J=B89980;GA13Z=736C8C;GA52R=C28B8C;GKA55RTB=313441;GS04G=A07959;H0645=F1CE96;H7117=546F94;I8912=D6CDC2;NS28H=A26E84;PV11J=8A5E57;PV12B=53647F;PV12X=AA998C;PV13J=A79284;PV13M=E6E9E7;PV14F=E7E5DB;PV14T=ECDBC4;PV16S=D7D9C9;PV17K=5C3F3A;PV18X=4C413A;PV18Z=AF998F;PV24R=463A34;PV27G=CAB59F;PV27T=8F7765;PV28D=8195AA;PV28R=8A6854;PV28T=9B8877;PV29G=6D6354;PV29T=7F5333;PV30L=4B4446;PV30Z=403A3C;PV31A=EEDCC4;PV31B=2B2B37;PV32A=AE8858;PV36Y=5F575D;PV37Q=353033;PV37S=90735D;PV37T=B6B5A4;PV41H=858586;PV42R=715642;PV44Q=D5CCBB;PV45S=2F2E37;PV45X=B0A29E;PV53K=7C5936;QD09D=9398A6;QW09R=65543B;QW09T=AFA292;QX81T=857462;QY32Z=DED7C9;RT41P=C08F61;S8800=313647;SYLB0324=7F5F48;SYLB0900=2F2F33;SYLB1719=F0EFFF;SYLB2153=FFD8C8;SYLB2328=AE8060;SYLB5151=66C09A;SYLB9595=67696C;SYLB9914=33363B;TY23G=7B7464;TY23H=5D5B56;TY23K=888372;TY23L=7F7568;TY23Q=333842;TY66E=68695A;TY66R=322E2F;TY66W=8E7861;TY67A=9C8771;TY78E=9D8E7B;TY78Z=727A81;TY79Q=9F856E;TY85F=7D5F4B;TY87S=636465;TZ52E=787E86;TZ52R=747A82;TZ52W=383A3E;UA35H=C0A48B;UA35J=C99D5C;UA42Z=56667E;VP53P=987C62;VP53Y=D8C1A8;VP67B=866F5C;VP69N=8C887B;VP69P=9DA19B;VP72U=586D7E</script>
+<script id="tpl-styles" type="text/plain"><?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://purl.oclc.org/ooxml/spreadsheetml/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac x16r2 xr" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" xmlns:x16r2="http://schemas.microsoft.com/office/spreadsheetml/2015/02/main" xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"><fonts count="7" x14ac:knownFonts="1"><font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/><charset val="1"/></font><font><b/><sz val="14"/><color theme="1"/><name val="Calibri"/><family val="2"/><charset val="1"/></font><font><sz val="14"/><color theme="1"/><name val="Calibri"/><family val="2"/><charset val="1"/></font><font><sz val="11"/><name val="Calibri"/><family val="2"/><charset val="1"/></font><font><sz val="11"/><color rgb="FFFF0000"/><name val="Calibri"/><family val="2"/><charset val="1"/></font><font><sz val="11"/><color rgb="FF000000"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><color rgb="FFFF0000"/><name val="Calibri"/><family val="2"/><charset val="1"/></font></fonts><fills count="80"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/><bgColor rgb="FFEEF1FF"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDAD1C5"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF75757D"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF4D5B77"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF4E494A"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF303034"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF878E9C"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF777374"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF7F7D7E"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF9C876B"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF313A4F"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF313749"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF373B4E"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEEF1FF"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2D2F42"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2D2D39"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF8A7363"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF6B5E58"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2F303C"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF443F42"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF939096"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF9B9A9C"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF846855"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF768398"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFC0B9B2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2B2C38"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF373538"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2C2C31"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE3DDCF"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFC1C7C9"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEBEBE7"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF5C748C"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFC79F8B"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF45546E"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFC0A887"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF4A4D56"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF393131"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF56423F"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF654E44"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF3C373A"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF3C475C"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF313239"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF31435F"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF855732"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF585958"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF9B9DA7"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFB6B6B2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2D2E37"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF303D55"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF5E5048"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF4F3D37"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF36373C"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFAC9E98"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF3A465E"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF625D64"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF797477"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF918C93"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF82848C"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF4A464A"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF4A494F"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF303342"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2E2E39"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF8E98A4"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF8E8E90"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF615B59"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF3A3A3E"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF635047"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF403F45"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF4A4E4D"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor theme="0"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF31333C"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF6C6A75"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF646A76"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF8F6949"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF343944"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF48586A"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF8E837D"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF6E6964"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="3"><border><start/><end/><top/><bottom/><diagonal/></border><border><start/><end/><top/><bottom style="thin"><color auto="1"/></bottom><diagonal/></border><border><start style="thin"><color auto="1"/></start><end style="thin"><color auto="1"/></end><top style="thin"><color auto="1"/></top><bottom style="thin"><color auto="1"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="105"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf><xf numFmtId="49" fontId="2" fillId="2" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="2" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="2" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="2" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="2" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="49" fontId="0" fillId="0" borderId="2" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="2" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="2" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="5" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="8" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="9" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="10" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="11" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="12" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="13" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="7" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="3" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="14" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="15" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="16" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="17" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="18" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="19" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="20" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="21" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="22" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="6" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="23" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="24" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="25" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="26" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="27" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="28" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="29" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="30" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="31" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="32" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="33" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="34" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="35" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="36" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="37" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="38" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="39" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="40" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="41" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="42" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="43" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="44" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="45" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="46" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="4" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="47" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="48" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="49" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="50" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="51" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="52" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="53" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="54" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="55" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="56" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="57" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="58" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="59" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="60" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="61" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="62" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="63" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="64" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="65" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="66" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="67" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="68" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="69" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="70" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="6" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="71" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="4" fillId="71" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="7" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="3" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="72" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="73" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="74" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="75" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="76" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="77" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="78" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="79" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="0"/><tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/><colors><indexedColors><rgbColor rgb="FF000000"/><rgbColor rgb="FFFFFFFF"/><rgbColor rgb="FFFF0000"/><rgbColor rgb="FF827D7E"/><rgbColor rgb="FF625D64"/><rgbColor rgb="FF948A7A"/><rgbColor rgb="FF797477"/><rgbColor rgb="FF82848C"/><rgbColor rgb="FF4F3D37"/><rgbColor rgb="FF4A4B53"/><rgbColor rgb="FF2D2E38"/><rgbColor rgb="FF846855"/><rgbColor rgb="FF474146"/><rgbColor rgb="FF575B4E"/><rgbColor rgb="FFC1C7C9"/><rgbColor rgb="FF7F7D7E"/><rgbColor rgb="FF98A5B9"/><rgbColor rgb="FF654E44"/><rgbColor rgb="FFEBEBE7"/><rgbColor rgb="FFEEF1FF"/><rgbColor rgb="FF383436"/><rgbColor rgb="FFB6967C"/><rgbColor rgb="FF36465E"/><rgbColor rgb="FFDAD1C5"/><rgbColor rgb="FF30313C"/><rgbColor rgb="FF777374"/><rgbColor rgb="FF918C93"/><rgbColor rgb="FF75757D"/><rgbColor rgb="FF363C51"/><rgbColor rgb="FF31384C"/><rgbColor rgb="FF585958"/><rgbColor rgb="FF6B5E58"/><rgbColor rgb="FF878E9C"/><rgbColor rgb="FFA09D98"/><rgbColor rgb="FF9B9DA7"/><rgbColor rgb="FF939096"/><rgbColor rgb="FFB6B6B2"/><rgbColor rgb="FFC79F8B"/><rgbColor rgb="FFC0B9B2"/><rgbColor rgb="FFE3DDCF"/><rgbColor rgb="FF4A5974"/><rgbColor rgb="FF8E98A4"/><rgbColor rgb="FFC0A887"/><rgbColor rgb="FFAC9E98"/><rgbColor rgb="FF9C876B"/><rgbColor rgb="FF8A7363"/><rgbColor rgb="FF5C748C"/><rgbColor rgb="FF9B9A9C"/><rgbColor rgb="FF2C3045"/><rgbColor rgb="FF768398"/><rgbColor rgb="FF2C2C38"/><rgbColor rgb="FF2C2B2F"/><rgbColor rgb="FF56423F"/><rgbColor rgb="FF5E5048"/><rgbColor rgb="FF303B54"/><rgbColor rgb="FF303034"/><rgbColor rgb="00003366"/><rgbColor rgb="00339966"/><rgbColor rgb="00003300"/><rgbColor rgb="00333300"/><rgbColor rgb="00993300"/><rgbColor rgb="00993366"/><rgbColor rgb="00333399"/><rgbColor rgb="00333333"/></indexedColors></colors><extLst><ext uri="{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}" xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"><x14:slicerStyles defaultSlicerStyle="SlicerStyleLight1"/></ext><ext uri="{9260A510-F301-46a8-8635-F512D64BE5F5}" xmlns:x15="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"><x15:timelineStyles defaultTimelineStyle="TimeSlicerStyleLight1"/></ext></extLst></styleSheet></script>
+<script id="tpl-theme" type="text/plain"><?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<a:theme xmlns:a="http://purl.oclc.org/ooxml/drawingml/main" name="Office Theme"><a:themeElements><a:clrScheme name="Office"><a:dk1><a:srgbClr val="000000"/></a:dk1><a:lt1><a:srgbClr val="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="44546A"/></a:dk2><a:lt2><a:srgbClr val="E7E6E6"/></a:lt2><a:accent1><a:srgbClr val="4472C4"/></a:accent1><a:accent2><a:srgbClr val="ED7D31"/></a:accent2><a:accent3><a:srgbClr val="A5A5A5"/></a:accent3><a:accent4><a:srgbClr val="FFC000"/></a:accent4><a:accent5><a:srgbClr val="5B9BD5"/></a:accent5><a:accent6><a:srgbClr val="70AD47"/></a:accent6><a:hlink><a:srgbClr val="0563C1"/></a:hlink><a:folHlink><a:srgbClr val="954F72"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Calibri Light" panose="020F0302020204030204"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont><a:minorFont><a:latin typeface="Calibri" panose="020F0502020204030204"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme><a:fmtScheme><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:gradFill><a:gsLst><a:gs pos="0%"><a:schemeClr val="phClr"><a:lumMod val="110%"/><a:tint val="67%"/></a:schemeClr></a:gs><a:gs pos="50%"><a:schemeClr val="phClr"><a:lumMod val="105%"/><a:tint val="73%"/></a:schemeClr></a:gs><a:gs pos="100%"><a:schemeClr val="phClr"><a:lumMod val="105%"/><a:tint val="81%"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/><a:tileRect/></a:gradFill><a:gradFill><a:gsLst><a:gs pos="0%"><a:schemeClr val="phClr"><a:lumMod val="102%"/><a:tint val="94%"/></a:schemeClr></a:gs><a:gs pos="50%"><a:schemeClr val="phClr"><a:lumMod val="100%"/><a:shade val="100%"/></a:schemeClr></a:gs><a:gs pos="100%"><a:schemeClr val="phClr"><a:lumMod val="99%"/><a:shade val="78%"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/><a:tileRect/></a:gradFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350" cap="flat" cmpd="sng" algn="ctr"><a:prstDash val="solid"/><a:miter lim="800%"/></a:ln><a:ln w="12700" cap="flat" cmpd="sng" algn="ctr"><a:prstDash val="solid"/><a:miter lim="800%"/></a:ln><a:ln w="19050" cap="flat" cmpd="sng" algn="ctr"><a:prstDash val="solid"/><a:miter lim="800%"/></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"><a:tint val="95%"/></a:schemeClr></a:solidFill><a:gradFill><a:gsLst><a:gs pos="0%"><a:schemeClr val="phClr"><a:tint val="93%"/><a:shade val="98%"/><a:lumMod val="102%"/></a:schemeClr></a:gs><a:gs pos="50%"><a:schemeClr val="phClr"><a:tint val="98%"/><a:shade val="90%"/><a:lumMod val="103%"/></a:schemeClr></a:gs><a:gs pos="100%"><a:schemeClr val="phClr"><a:shade val="63%"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/><a:tileRect/></a:gradFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme></script>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+
+/* ============================ MASTER COLOR TABLES (baked in) ============================ */
+var BRANDS=[{id:'coats',label:'Coats &amp; A&amp;E',src:'master-data',note:'Coats &amp; AE supplier master'}];
+var CUR=BRANDS[0], CACHE={}, MASTER_N=0;
+function master(){
+  var c=CACHE[CUR.id];
+  if(!c){
+    var map=Object.create(null), n=0;
+    var parts=document.getElementById(CUR.src).textContent.split(';');
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i]; if(!p) continue;
+      var k=p.indexOf('='); if(k<0) continue;
+      map[p.slice(0,k)]=p.slice(k+1); n++;
+    }
+    c=CACHE[CUR.id]={map:map,n:n};
+  }
+  MASTER_N=c.n;
+  return c.map;
+}
+function renderBrands(){
+  var seg=document.getElementById('brandSeg');
+  seg.innerHTML=BRANDS.map(function(b){
+    var prev=CUR; CUR=b; master(); CUR=prev;
+    return '<button type="button" class="seg-i'+(b.id===CUR.id?' on':'')+'" data-brand="'+b.id+'">'+b.label+'<span class="seg-n">'+CACHE[b.id].n.toLocaleString()+'</span><span class="caret">▾</span></button>';
+  }).join('');
+  seg.querySelectorAll('.seg-i').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var id=btn.getAttribute('data-brand');
+      if(id===CUR.id){ openCatalogue(); return; }
+      for(var i=0;i<BRANDS.length;i++) if(BRANDS[i].id===id) CUR=BRANDS[i];
+      master();
+      renderBrands();
+      document.getElementById('results').style.display='none';
+      document.getElementById('dlBtn').disabled=true;
+      log('Brand switched to '+CUR.label.replace(/&amp;/g,'&')+' · '+MASTER_N.toLocaleString()+' codes. Run again to refill.','step');
+    });
+  });
+  master();
+  document.getElementById('brandNote').textContent=MASTER_N.toLocaleString()+' codes · '+CUR.note.replace(/&amp;/g,'&');
+}
+
+/* ============================ ZIP (native, no library) ============================ */
+var CRC_TABLE=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(buf){var c=0xFFFFFFFF;for(var i=0;i<buf.length;i++)c=CRC_TABLE[(c^buf[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+var TD=new TextDecoder(), TE=new TextEncoder();
+async function inflateRaw(bytes){
+  var st=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(st).arrayBuffer());
+}
+async function deflateRaw(bytes){
+  var st=new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(st).arrayBuffer());
+}
+function readZip(buf){
+  var dv=new DataView(buf), u8=new Uint8Array(buf), eocd=-1;
+  for(var i=u8.length-22;i>=0;i--){ if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;} }
+  if(eocd<0) throw new Error('That file is not a readable .xlsx or .xlsm workbook.');
+  var count=dv.getUint16(eocd+10,true), off=dv.getUint32(eocd+16,true);
+  var entries=[], byName={};
+  for(var k=0;k<count;k++){
+    if(dv.getUint32(off,true)!==0x02014b50) throw new Error('The workbook’s zip directory is damaged.');
+    var method=dv.getUint16(off+10,true), time=dv.getUint16(off+12,true), date=dv.getUint16(off+14,true);
+    var crc=dv.getUint32(off+16,true), csize=dv.getUint32(off+20,true), usize=dv.getUint32(off+24,true);
+    var nl=dv.getUint16(off+28,true), el=dv.getUint16(off+30,true), cl=dv.getUint16(off+32,true);
+    var lho=dv.getUint32(off+42,true);
+    var name=TD.decode(u8.subarray(off+46,off+46+nl));
+    var lnl=dv.getUint16(lho+26,true), lel=dv.getUint16(lho+28,true), ds=lho+30+lnl+lel;
+    var e={name:name,method:method,time:time,date:date,crc:crc,csize:csize,usize:usize,raw:u8.subarray(ds,ds+csize),data:null};
+    entries.push(e); byName[name]=e;
+    off+=46+nl+el+cl;
+  }
+  return {entries:entries,byName:byName};
+}
+async function entryText(e){
+  if(!e) return null;
+  if(e.data!=null) return typeof e.data==='string'?e.data:TD.decode(e.data);
+  return e.method===0?TD.decode(e.raw):TD.decode(await inflateRaw(e.raw));
+}
+async function writeZip(zip){
+  var parts=[], central=[], offset=0;
+  for(var i=0;i<zip.entries.length;i++){
+    var e=zip.entries[i], nameBytes=TE.encode(e.name), utf8=false;
+    for(var b=0;b<nameBytes.length;b++){ if(nameBytes[b]>127){utf8=true;break;} }
+    var method,crc,csize,usize,payload;
+    if(e.data!=null){
+      var plain=typeof e.data==='string'?TE.encode(e.data):e.data;
+      usize=plain.length; crc=crc32(plain);
+      payload=await deflateRaw(plain); method=8; csize=payload.length;
+      if(csize>=usize){ payload=plain; method=0; csize=usize; }
+    }else{ method=e.method; crc=e.crc; csize=e.csize; usize=e.usize; payload=e.raw; }
+    var lh=new Uint8Array(30+nameBytes.length), ldv=new DataView(lh.buffer);
+    ldv.setUint32(0,0x04034b50,true); ldv.setUint16(4,20,true); ldv.setUint16(6,utf8?0x800:0,true);
+    ldv.setUint16(8,method,true); ldv.setUint16(10,e.time,true); ldv.setUint16(12,e.date,true);
+    ldv.setUint32(14,crc,true); ldv.setUint32(18,csize,true); ldv.setUint32(22,usize,true);
+    ldv.setUint16(26,nameBytes.length,true); lh.set(nameBytes,30);
+    parts.push(lh,payload);
+    var ch=new Uint8Array(46+nameBytes.length), cdv=new DataView(ch.buffer);
+    cdv.setUint32(0,0x02014b50,true); cdv.setUint16(4,20,true); cdv.setUint16(6,20,true);
+    cdv.setUint16(8,utf8?0x800:0,true); cdv.setUint16(10,method,true);
+    cdv.setUint16(12,e.time,true); cdv.setUint16(14,e.date,true);
+    cdv.setUint32(16,crc,true); cdv.setUint32(20,csize,true); cdv.setUint32(24,usize,true);
+    cdv.setUint16(28,nameBytes.length,true); cdv.setUint32(42,offset,true); ch.set(nameBytes,46);
+    central.push(ch);
+    offset+=lh.length+csize;
+  }
+  var cdSize=0; central.forEach(function(c){cdSize+=c.length;});
+  var end=new Uint8Array(22), edv=new DataView(end.buffer);
+  edv.setUint32(0,0x06054b50,true);
+  edv.setUint16(8,zip.entries.length,true); edv.setUint16(10,zip.entries.length,true);
+  edv.setUint32(12,cdSize,true); edv.setUint32(16,offset,true);
+  return new Blob(parts.concat(central,[end]),{type:'application/octet-stream'});
+}
+
+/* ============================ XLSX HELPERS ============================ */
+function cleanCode(v){
+  if(v==null) return '';
+  return String(v).replace(/[\u00A0\u200B\uFEFF]/g,'').trim().replace(/^'+/,'').trim().toUpperCase();
+}
+function colIndex(letters){ var n=0; for(var i=0;i<letters.length;i++) n=n*26+(letters.charCodeAt(i)-64); return n; }
+function colLetters(n){ var s=''; while(n>0){ var r=(n-1)%26; s=String.fromCharCode(65+r)+s; n=(n-1-r)/26; } return s; }
+function unesc(s){ return s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,function(_,d){return String.fromCharCode(+d);}).replace(/&amp;/g,'&'); }
+function attr(s,name){ var m=new RegExp(name+'="([^"]*)"').exec(s); return m?m[1]:null; }
+function parseSharedStrings(xml){
+  if(!xml) return [];
+  return (xml.match(/<si\b[^>]*(?:\/>|>[\s\S]*?<\/si>)/g)||[]).map(function(si){
+    return unesc((si.match(/<t\b[^>]*>([\s\S]*?)<\/t>/g)||[]).map(function(t){
+      return t.replace(/<t\b[^>]*>/,'').replace(/<\/t>/,'');
+    }).join(''));
+  });
+}
+function sectionOf(xml,tag){
+  var m=xml.match(new RegExp('<'+tag+'\\b[^>]*(?:/>|>[\\s\\S]*?</'+tag+'>)'));
+  return m?m[0]:null;
+}
+function splitTags(section,tag){
+  if(!section) return [];
+  return section.replace(/^<[^>]*>/,'').match(new RegExp('<'+tag+'\\b[^>]*?(?:/>|>[\\s\\S]*?</'+tag+'>)','g'))||[];
+}
+function fillRgb(fillStr){
+  if(!fillStr||!/patternType="solid"/.test(fillStr)) return null;
+  var fg=/<fgColor([^>]*)\/>/.exec(fillStr); if(!fg) return null;
+  var rgb=attr(fg[1],'rgb'); if(!rgb) return null;
+  rgb=rgb.toUpperCase(); if(rgb.length===6) rgb='FF'+rgb;
+  return rgb.length===8?rgb:null;
+}
+var ROW_RE=/<row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/row>)/g;
+var CELL_RE=/<c r="([A-Z]+)(\d+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
+function rowCells(inner,sst){
+  var out={}, m; CELL_RE.lastIndex=0;
+  while((m=CELL_RE.exec(inner||''))){
+    var body=m[4]||'', t=attr(m[3],'t'), v=/<v>([\s\S]*?)<\/v>/.exec(body), text=null;
+    if(v) text = t==='s' ? (sst[+v[1]]!=null?sst[+v[1]]:'') : unesc(v[1]);
+    else if(t==='inlineStr'){ var is=/<t[^>]*>([\s\S]*?)<\/t>/.exec(body); text=is?unesc(is[1]):null; }
+    var s=attr(m[3],'s');
+    out[m[1]]={text:text,style:s==null?null:+s,cell:m[0]};
+  }
+  return out;
+}
+async function sheetList(zip){
+  var wb=await entryText(zip.byName['xl/workbook.xml']);
+  var rels=await entryText(zip.byName['xl/_rels/workbook.xml.rels'])||'';
+  var relMap={};
+  (rels.match(/<Relationship\b[^>]*\/>/g)||[]).forEach(function(r){ relMap[attr(r,'Id')]=attr(r,'Target'); });
+  return (wb.match(/<sheet\b[^>]*\/>/g)||[]).map(function(s){
+    var t=(relMap[attr(s,'r:id')]||'worksheets/sheet1.xml').replace(/^\//,'');
+    return {name:unesc(attr(s,'name')||''), path:t.indexOf('xl/')===0?t:'xl/'+t};
+  });
+}
+
+/* ---------- BLK column detection ---------- */
+var BLK_FIELDS=[['style',/^STYLE$/],['placement',/^PLACEMENT$/],['codeName',/^CODE\s*NAME$/],['codeColor',/^CODE\s*COLOR$/],['quality',/^QUALITY$/],['season',/^SEASON$/],['wash',/^WASH$/],['blk',/^BLK$/]];
+var BLK_LABEL={style:'STYLE',placement:'PLACEMENT',codeName:'CODE NAME',codeColor:'CODE COLOR',quality:'QUALITY',season:'SEASON',wash:'WASH',blk:'BLK'};
+function normLabel(t){ return (t==null?'':String(t)).replace(/\s+/g,' ').trim().toUpperCase(); }
+function detectBlk(sheets,xmls,sst){
+  var best=null;
+  for(var i=0;i<sheets.length;i++){
+    var xml=xmls[i]; if(!xml) continue;
+    var scanned=0,m; ROW_RE.lastIndex=0;
+    while((m=ROW_RE.exec(xml))&&scanned<15){
+      var rn=+(attr(m[1],'r')||0); if(!rn) continue;
+      scanned++;
+      var cells=rowCells(m[2]||'',sst), cols={}, hits=0;
+      for(var ref in cells){
+        var t=normLabel(cells[ref].text); if(!t) continue;
+        for(var f=0;f<BLK_FIELDS.length;f++){
+          var key=BLK_FIELDS[f][0];
+          if(!cols[key]&&BLK_FIELDS[f][1].test(t)){ cols[key]=ref; hits++; }
+        }
+      }
+      var required=!!(cols.style&&cols.placement&&cols.codeColor&&cols.quality);
+      if(hits>=3){
+        var cand={sheet:i,headerRow:rn,cols:cols,hits:hits,required:required};
+        if(!best||(cand.required&&!best.required)||(cand.required===best.required&&cand.hits>best.hits)) best=cand;
+      }
+    }
+  }
+  return best;
+}
+function xesc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function inlineCell(ref,style,text){
+  if(text==null||text===''){ return '<c r="'+ref+'" s="'+style+'"/>'; }
+  return '<c r="'+ref+'" s="'+style+'" t="inlineStr"><is><t xml:space="preserve">'+xesc(text)+'</t></is></c>';
+}
+
+/* ---------- output workbook shell (baked in) ---------- */
+var CT_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/></Types>';
+var ROOT_RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+var WORKBOOK_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="pr thread" sheetId="1" r:id="rId1"/></sheets></workbook>';
+var WORKBOOK_RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/></Relationships>';
+var ROW_A='18', ROW_B='19', ROW_C='20', ROW_D='20', ROW_E='19', ROW_F_BASE=21;
+function buildSheetXml(items,jobs,st){
+  var rows=[];
+  rows.push('<row r="1" spans="1:6">'+inlineCell('A1','104','Purchasing Request - THREAD')+'<c r="B1" s="104"/><c r="C1" s="104"/><c r="D1" s="104"/><c r="E1" s="104"/><c r="F1" s="104"/></row>');
+  rows.push('<row r="3" spans="1:6">'+inlineCell('A3','8','Buyer:')+'<c r="B3" s="9"/><c r="C3" s="10"/>'+inlineCell('D3','11','Style/SFC')+'<c r="E3" s="12"/>'+inlineCell('F3','13','BLK:')+'</row>');
+  rows.push('<row r="4" spans="1:6">'+inlineCell('A4','8','Season:')+inlineCell('B4','9',items.season)+'<c r="C4" s="10"/>'+inlineCell('D4','11','Wash Name:')+inlineCell('E4','9',items.wash)+inlineCell('F4','91',items.blk)+'</row>');
+  rows.push('<row r="5" spans="1:6">'+inlineCell('A5','14','No.')+inlineCell('B5','15','Placement')+inlineCell('C5','16','COLOR THD')+inlineCell('D5','16','CODE PP')+inlineCell('E5','15','Alternate Code')+inlineCell('F5','17','UPDATE COLOR')+'</row>');
+  for(var i=0;i<items.rows.length;i++){
+    var it=items.rows[i], rn=6+i, job=jobs[i], fCell;
+    if(job.kind==='fill') fCell='<c r="F'+rn+'" s="'+st.paint(ROW_F_BASE,job.rgb)+'"/>';
+    else if(job.kind==='nf') fCell='<c r="F'+rn+'" s="'+st.redText(ROW_F_BASE)+'" t="inlineStr"><is><t xml:space="preserve">NOT FOUND</t></is></c>';
+    else fCell='<c r="F'+rn+'" s="'+st.clearFill(ROW_F_BASE)+'"/>';
+    rows.push('<row r="'+rn+'" spans="1:6">'+
+      inlineCell('A'+rn,ROW_A,it.style)+inlineCell('B'+rn,ROW_B,it.placement)+
+      inlineCell('C'+rn,ROW_C,it.colorName)+inlineCell('D'+rn,ROW_D,it.code)+
+      inlineCell('E'+rn,ROW_E,it.quality)+fCell+'</row>');
+  }
+  var lastRow=5+items.rows.length;
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+    '<dimension ref="A1:F'+lastRow+'"/>'+
+    '<sheetViews><sheetView tabSelected="1" workbookViewId="0"/></sheetViews>'+
+    '<sheetFormatPr defaultRowHeight="15"/>'+
+    '<cols><col min="1" max="1" width="23" customWidth="1"/><col min="2" max="2" width="31.16" customWidth="1"/><col min="3" max="3" width="16.83" customWidth="1"/><col min="4" max="4" width="15.66" customWidth="1"/><col min="5" max="5" width="31.66" customWidth="1"/><col min="6" max="6" width="20" customWidth="1"/></cols>'+
+    '<sheetData>'+rows.join('')+'</sheetData>'+
+    '<mergeCells count="1"><mergeCell ref="A1:F1"/></mergeCells>'+
+    '</worksheet>';
+}
+
+/* ============================ STYLE BOOK ============================ */
+function StyleBook(xml){
+  this.xml=xml;
+  this.fillsSec=sectionOf(xml,'fills');
+  this.xfsSec=sectionOf(xml,'cellXfs');
+  this.fontsSec=sectionOf(xml,'fonts');
+  this.fills=splitTags(this.fillsSec,'fill');
+  this.xfs=splitTags(this.xfsSec,'xf');
+  this.fonts=splitTags(this.fontsSec,'font');
+  this.addedFills=0; this.addedXfs=0;
+  this.fillByRgb={}; this.xfByKey={};
+  for(var i=0;i<this.fills.length;i++){ var rgb=fillRgb(this.fills[i]); if(rgb&&this.fillByRgb[rgb]===undefined) this.fillByRgb[rgb]=i; }
+  for(var j=0;j<this.xfs.length;j++) if(this.xfByKey[this.xfs[j]]===undefined) this.xfByKey[this.xfs[j]]=j;
+  this.redFont=-1;
+  for(var k=0;k<this.fonts.length;k++) if(/<color rgb="FFFF0000"\/>/.test(this.fonts[k])){ this.redFont=k; break; }
+  if(this.redFont<0){
+    this.fonts.push('<font><sz val="11"/><color rgb="FFFF0000"/><name val="Calibri"/><family val="2"/></font>');
+    this.redFont=this.fonts.length-1; this.addedFont=true;
+  }
+}
+StyleBook.prototype.setAttr=function(xf,name,val){
+  var re=new RegExp(name+'="[^"]*"');
+  return re.test(xf)?xf.replace(re,name+'="'+val+'"'):xf.replace(/^<xf\b/,'<xf '+name+'="'+val+'"');
+};
+StyleBook.prototype.derive=function(baseIdx,fillId,fontId){
+  var xf=this.xfs[baseIdx]||'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>';
+  xf=this.setAttr(xf,'fillId',fillId);
+  xf=this.setAttr(xf,'applyFill',fillId>0?'1':'0');
+  if(fontId!=null){ xf=this.setAttr(xf,'fontId',fontId); xf=this.setAttr(xf,'applyFont','1'); }
+  if(this.xfByKey[xf]!==undefined) return this.xfByKey[xf];
+  this.xfs.push(xf); this.addedXfs++;
+  var idx=this.xfs.length-1; this.xfByKey[xf]=idx; return idx;
+};
+StyleBook.prototype.clearFill=function(b){ return this.derive(b,0,null); };
+StyleBook.prototype.redText=function(b){ return this.derive(b,0,this.redFont); };
+StyleBook.prototype.paint=function(b,rgb){
+  var fid=this.fillByRgb[rgb];
+  if(fid===undefined){
+    this.fills.push('<fill><patternFill patternType="solid"><fgColor rgb="'+rgb+'"/><bgColor indexed="64"/></patternFill></fill>');
+    fid=this.fills.length-1; this.fillByRgb[rgb]=fid; this.addedFills++;
+  }
+  return this.derive(b,fid,null);
+};
+StyleBook.prototype.serialize=function(){
+  var xml=this.xml;
+  xml=xml.replace(this.fillsSec,'<fills count="'+this.fills.length+'">'+this.fills.join('')+'</fills>');
+  xml=xml.replace(this.xfsSec,'<cellXfs count="'+this.xfs.length+'">'+this.xfs.join('')+'</cellXfs>');
+  if(this.addedFont) xml=xml.replace(this.fontsSec,'<fonts count="'+this.fonts.length+'">'+this.fonts.join('')+'</fonts>');
+  return xml;
+};
+
+
+/* ============================ STATE + UI ============================ */
+var S={file:null,out:null,outName:'',rows:[],filter:'all'};
+var logEl=$('log');
+function stamp(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');};
+  return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
+function log(msg,kind){
+  var row=document.createElement('div');
+  row.className='tl-row'+(kind?' '+kind:'');
+  row.innerHTML='<span class="tl-rail"><span class="tl-dot"></span></span><span class="tl-time">'+stamp()+'</span><span class="tl-msg"></span>';
+  row.querySelector('.tl-msg').textContent=msg;
+  logEl.appendChild(row); logEl.scrollTop=logEl.scrollHeight;
+}
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function alertBox(kind,title,html){
+  var d=document.createElement('div');
+  d.className='alert '+kind;
+  var ico=kind==='err'
+    ?'<path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8m1 12H7v-2h2zm0-3H7V4h2z"/>'
+    :'<path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8M7 3h2v2H7zm3 10H6v-1h1V7H6V6h3v6h1z"/>';
+  d.innerHTML='<span class="a-ico"><svg viewBox="0 0 16 16">'+ico+'</svg></span><div><div class="a-title"></div><div class="a-text">'+html+'</div></div>';
+  d.querySelector('.a-title').textContent=title;
+  $('alerts').appendChild(d);
+}
+function setProg(p){ var el=$('prog'); if(p==null){el.classList.remove('on');return;} el.classList.add('on'); el.firstElementChild.style.width=Math.max(0,Math.min(100,p))+'%'; }
+function fmtSize(n){ return n<1024?n+' B':n<1048576?(n/1024).toFixed(0)+' KB':(n/1048576).toFixed(1)+' MB'; }
+
+/* ---------- intake ---------- */
+(function wire(){
+  var drop=$('drop'), input=$('file');
+  ['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add('hover');}); });
+  ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove('hover');}); });
+  drop.addEventListener('drop',function(e){ var f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) take(f); });
+  input.addEventListener('change',function(){ if(input.files&&input.files[0]) take(input.files[0]); });
+})();
+function take(file){
+  var st=$('st');
+  if(!/\.xls[xm]$/i.test(file.name)){
+    st.className='slot-status err'; st.innerHTML='<span class="nm"></span>';
+    st.querySelector('.nm').textContent='Not an Excel workbook: '+file.name;
+    return;
+  }
+  S.file=file; S.out=null; S.rows=[];
+  $('drop').classList.add('loaded');
+  $('results').style.display='none'; $('dlBtn').disabled=true; $('alerts').innerHTML=''; $('detect').innerHTML='';
+  st.className='slot-status ok';
+  st.innerHTML='<span class="ic"><svg viewBox="0 0 16 16" style="width:14px;height:14px;fill:currentColor"><path d="M14.49 3.51a1 1 0 0 0-1.42 0L6 10.59 2.93 7.51a1.003 1.003 0 0 0-1.42 1.42l3.79 3.78c.18.18.43.29.7.29s.52-.11.7-.29l7.79-7.78c.39-.39.39-1.03 0-1.42"/></svg></span><span class="nm"></span><span class="sz">'+fmtSize(file.size)+'</span>';
+  st.querySelector('.nm').textContent=file.name;
+  log('Loaded '+file.name+' · '+fmtSize(file.size),'sub');
+  $('runBtn').disabled=false; $('clearBtn').disabled=false;
+}
+function resetAll(){
+  S={file:null,out:null,outName:'',rows:[],filter:'all'};
+  $('file').value=''; $('drop').classList.remove('loaded');
+  $('st').className='slot-status'; $('st').innerHTML='<span class="nm">No file loaded.</span>';
+  $('detect').innerHTML=''; $('alerts').innerHTML=''; logEl.innerHTML='';
+  $('results').style.display='none'; $('dlBtn').disabled=true;
+  $('runBtn').disabled=true; $('clearBtn').disabled=true;
+  setProg(null);
+  log('Cleared.','sub');
+}
+
+/* ============================ RUN ============================ */
+async function run(){
+  $('alerts').innerHTML=''; logEl.innerHTML='';
+  $('runBtn').disabled=true; $('clearBtn').disabled=true; $('results').style.display='none';
+  setProg(4);
+  var t0=performance.now();
+  try{
+    var MAP=master();
+    log('Master table ready · '+CUR.label.replace(/&amp;/g,'&')+' · '+MASTER_N.toLocaleString()+' codes','sub');
+
+    var zip=readZip(await S.file.arrayBuffer());
+    log('BLK file opened · '+zip.entries.length+' parts','step');
+    setProg(15);
+
+    var sheets=await sheetList(zip);
+    var sst=parseSharedStrings(await entryText(zip.byName['xl/sharedStrings.xml']));
+    var xmls=[];
+    for(var i=0;i<sheets.length;i++) xmls.push(await entryText(zip.byName[sheets[i].path]));
+    var found=detectBlk(sheets,xmls,sst);
+    if(!found||!found.required){
+      var need=['style','placement','codeColor','quality'], missing=[];
+      for(var k=0;k<need.length;k++) if(!found||!found.cols[need[k]]) missing.push(BLK_LABEL[need[k]]);
+      throw new Error('Could not find a '+missing.join(', ')+' column in this file. Expected headers like STYLE, PLACEMENT, CODE NAME, CODE COLOR, QUALITY.');
+    }
+    var sheet=sheets[found.sheet], sheetXml=xmls[found.sheet], cols=found.cols;
+    var dataStart=found.headerRow+1;
+    log('Detected sheet "'+sheet.name+'" · header row '+found.headerRow+' · style '+cols.style+' · code '+cols.codeColor,'ok');
+    setProg(28);
+
+    var rows=[], countOK=0, countNF=0, usedColors={}, seasonSet=[], washSet=[], blkSet=[];
+    var m; ROW_RE.lastIndex=0;
+    while((m=ROW_RE.exec(sheetXml))){
+      var rn=+(attr(m[1],'r')||0);
+      if(rn<dataStart) continue;
+      var cells=rowCells(m[2]||'',sst);
+      var cc=cells[cols.codeColor];
+      if(!cc||cc.text==null||!String(cc.text).trim()) continue;
+      var codeRaw=String(cc.text).trim(), code=cleanCode(codeRaw);
+      var styleTxt=cells[cols.style]&&cells[cols.style].text!=null?String(cells[cols.style].text):'';
+      var placementTxt=cells[cols.placement]&&cells[cols.placement].text!=null?String(cells[cols.placement].text):'';
+      var colorNameTxt=(cols.codeName&&cells[cols.codeName]&&cells[cols.codeName].text!=null)?String(cells[cols.codeName].text):codeRaw;
+      var qualityTxt=cells[cols.quality]&&cells[cols.quality].text!=null?String(cells[cols.quality].text):'';
+      var hit=MAP[code];
+      if(hit===undefined){ countNF++; rows.push({style:styleTxt,placement:placementTxt,colorName:colorNameTxt,code:codeRaw,quality:qualityTxt,rgb:null,state:'nf'}); }
+      else if(hit){ countOK++; usedColors['FF'+hit]=1; rows.push({style:styleTxt,placement:placementTxt,colorName:colorNameTxt,code:codeRaw,quality:qualityTxt,rgb:hit,state:'ok'}); }
+      else{ countOK++; rows.push({style:styleTxt,placement:placementTxt,colorName:colorNameTxt,code:codeRaw,quality:qualityTxt,rgb:null,state:'empty'}); }
+      if(cols.season){ var sv=cells[cols.season]&&cells[cols.season].text; if(sv&&seasonSet.indexOf(sv)<0) seasonSet.push(sv); }
+      if(cols.wash){ var wv=cells[cols.wash]&&cells[cols.wash].text; if(wv&&washSet.indexOf(wv)<0) washSet.push(wv); }
+      if(cols.blk){ var bv=cells[cols.blk]&&cells[cols.blk].text; if(bv&&blkSet.indexOf(bv)<0) blkSet.push(bv); }
+    }
+    if(!rows.length) throw new Error('No rows with a value in the '+BLK_LABEL.codeColor+' column ('+cols.codeColor+') were found below row '+found.headerRow+'.');
+    log('Rows '+dataStart+'+ · '+rows.length.toLocaleString()+' thread rows read from the BLK file','ok');
+    if(cols.season||cols.wash||cols.blk) log('Header info · season '+(seasonSet.join(', ')||'—')+' · wash '+(washSet.join(', ')||'—')+' · blk '+(blkSet.join(', ')||'—'),'sub');
+    setProg(45);
+
+    var jobs=rows.map(function(r){
+      return r.state==='ok'?{kind:'fill',rgb:'FF'+r.rgb}:r.state==='nf'?{kind:'nf'}:{kind:'clear'};
+    });
+    var st=new StyleBook(document.getElementById('tpl-styles').textContent);
+    var sheetOut=buildSheetXml({rows:rows,season:seasonSet.join(', '),wash:washSet.join(', '),blk:blkSet.join(', ')},jobs,st);
+    log('styles.xml · '+st.addedFills+' new fill'+(st.addedFills===1?'':'s')+', '+st.addedXfs+' new cell format'+(st.addedXfs===1?'':'s'),'sub');
+    setProg(75);
+
+    var zipOut={entries:[],byName:{}};
+    function addPart(name,data){ var e={name:name,method:8,time:0,date:0x2821,crc:0,csize:0,usize:0,raw:new Uint8Array(0),data:data}; zipOut.entries.push(e); zipOut.byName[name]=e; }
+    addPart('[Content_Types].xml',CT_XML);
+    addPart('_rels/.rels',ROOT_RELS);
+    addPart('xl/workbook.xml',WORKBOOK_XML);
+    addPart('xl/_rels/workbook.xml.rels',WORKBOOK_RELS);
+    addPart('xl/theme/theme1.xml',document.getElementById('tpl-theme').textContent);
+    addPart('xl/styles.xml',st.serialize());
+    addPart('xl/worksheets/sheet1.xml',sheetOut);
+    setProg(88);
+
+    var blob=await writeZip(zipOut);
+    S.out=blob; S.outName=S.file.name.replace(/\.xls[xm]$/i,'')+' - TRIM CARD THREAD.xlsx';
+    S.rows=rows;
+    setProg(100);
+    log('Done in '+Math.round(performance.now()-t0)+' ms · '+countOK.toLocaleString()+' found · '+countNF.toLocaleString()+' not found','ok');
+
+    $('kRows').textContent=rows.length.toLocaleString();
+    $('kRowsSub').textContent='From the BLK file, column '+cols.codeColor;
+    $('kOk').textContent=countOK.toLocaleString();
+    $('kOkSub').textContent='of '+MASTER_N.toLocaleString()+' master codes';
+    $('kNf').textContent=countNF.toLocaleString();
+    $('kCol').textContent=Object.keys(usedColors).length.toLocaleString();
+    $('kColSub').textContent=st.addedFills+' added to styles.xml';
+    $('resHint').textContent='New trim card · '+(5+rows.length)+' rows · '+fmtSize(blob.size);
+    $('nAll').textContent=rows.length; $('nNf').textContent=countNF;
+    $('outName').textContent=S.outName;
+    $('outMeta').textContent=fmtSize(blob.size)+' · '+zipOut.entries.length+' parts';
+    $('dlBtn').disabled=false;
+    $('detect').innerHTML=
+      '<span class="dchip">Sheet <b>'+escapeHtml(sheet.name)+'</b></span>'+
+      '<span class="dchip">Header row <b>'+found.headerRow+'</b></span>'+
+      '<span class="dchip">Style <b>'+cols.style+'</b></span>'+
+      '<span class="dchip">Code <b>'+cols.codeColor+'</b></span>'+
+      '<span class="dchip">Rows <b>'+rows.length+'</b></span>';
+    renderRows();
+    $('results').style.display='flex';
+
+    if(countNF) alertBox('warn','Not found: '+countNF+' code'+(countNF===1?'':'s'),
+      'Those rows get <code>NOT FOUND</code> in red in column F. Filter the preview by <b>Not found</b> to list them.');
+    setTimeout(function(){setProg(null);},600);
+  }catch(err){
+    setProg(null);
+    log('Failed: '+((err&&err.message)||String(err)),'err');
+    alertBox('err','Nothing was built',escapeHtml((err&&err.message)||'Unknown error')+' The BLK file on your disk is untouched.');
+  }
+  $('runBtn').disabled=false; $('clearBtn').disabled=false;
+}
+
+/* ---------- preview ---------- */
+var CAP=600;
+function renderRows(){
+  var q=($('q').value||'').trim().toUpperCase();
+  var list=S.rows.filter(function(r){
+    if(S.filter==='nf'&&r.state!=='nf') return false;
+    if(!q) return true;
+    return r.code.toUpperCase().indexOf(q)>=0||r.style.toUpperCase().indexOf(q)>=0||r.placement.toUpperCase().indexOf(q)>=0;
+  });
+  var wrap=$('pvWrap');
+  if(!S.rows.length){ wrap.innerHTML='<div class="empty">Nothing built yet.</div>'; $('pvNote').textContent=''; return; }
+  if(!list.length){ wrap.innerHTML='<div class="empty">No rows match this filter.</div>'; $('pvNote').textContent=''; return; }
+  var shown=list.slice(0,CAP), html=
+    '<table><thead><tr><th>Style</th><th>Placement</th><th>Color name</th><th>Code</th><th>Fill</th><th>Hex</th><th>Status</th></tr></thead><tbody>';
+  for(var i=0;i<shown.length;i++){
+    var r=shown[i];
+    var sw=r.rgb?'<span class="sw" style="background:#'+r.rgb+'"></span>':'<span class="sw none"></span>';
+    var tag=r.state==='ok'?'<span class="tag ok">Filled</span>'
+      :r.state==='nf'?'<span class="tag nf">Not found</span>'
+      :'<span class="tag empty">No color</span>';
+    html+='<tr><td class="mono">'+escapeHtml(r.style)+'</td>'+
+      '<td class="mono" style="max-width:260px;overflow:hidden;text-overflow:ellipsis" title="'+escapeHtml(r.placement)+'">'+escapeHtml(r.placement)+'</td>'+
+      '<td class="mono">'+escapeHtml(r.colorName)+'</td><td class="mono">'+escapeHtml(r.code)+'</td>'+
+      '<td>'+sw+'</td><td class="mono">'+(r.rgb?'#'+r.rgb:'—')+'</td><td>'+tag+'</td></tr>';
+  }
+  wrap.innerHTML=html+'</tbody></table>';
+  $('pvNote').textContent=list.length>CAP
+    ? 'Showing the first '+CAP+' of '+list.length+' rows. Every row is written to the file.'
+    : list.length+' of '+S.rows.length+' rows shown.';
+}
+
+/* ---------- thread colour catalogue ---------- */
+var CAT_CAP=800;
+function openCatalogue(){
+  master();
+  document.getElementById('dlgT').textContent=CUR.label.replace(/&amp;/g,'&');
+  document.getElementById('dlgS').textContent=MASTER_N.toLocaleString()+' thread colors';
+  document.getElementById('ovl').classList.add('on');
+  var q=document.getElementById('dlgQ'); q.value=''; renderCatalogue(); q.focus();
+}
+function closeCatalogue(){ document.getElementById('ovl').classList.remove('on'); }
+function renderCatalogue(){
+  var map=master(), q=(document.getElementById('dlgQ').value||'').trim().toUpperCase();
+  var keys=Object.keys(map), hits=[];
+  for(var i=0;i<keys.length;i++){
+    var k=keys[i];
+    if(q&&k.indexOf(q)<0&&(map[k]||'').indexOf(q.replace('#',''))<0) continue;
+    hits.push(k);
+    if(hits.length>CAT_CAP&&!q) break;
+  }
+  var shown=hits.slice(0,CAT_CAP), html='';
+  for(var j=0;j<shown.length;j++){
+    var c=shown[j], rgb=map[c];
+    html+='<div class="th">'+(rgb?'<span class="sw" style="background:#'+rgb+'"></span>':'<span class="sw none"></span>')+
+      '<span class="c">'+escapeHtml(c)+'</span><span class="h">'+(rgb?'#'+rgb:'—')+'</span></div>';
+  }
+  document.getElementById('dlgBody').innerHTML=html||'<div class="empty" style="grid-column:1/-1">No code or hex matches that search.</div>';
+  document.getElementById('dlgF').textContent = q
+    ? shown.length.toLocaleString()+' match'+(shown.length===1?'':'es')+(hits.length>CAT_CAP?' · showing the first '+CAT_CAP:'')
+    : 'Showing the first '+shown.length.toLocaleString()+' of '+MASTER_N.toLocaleString()+' · search to narrow';
+}
+
+/* ============================ BOOT ============================ */
+$('runBtn').addEventListener('click',run);
+$('clearBtn').addEventListener('click',resetAll);
+$('q').addEventListener('input',renderRows);
+$('fAll').addEventListener('click',function(){ S.filter='all'; $('fAll').classList.add('on'); $('fNf').classList.remove('on'); renderRows(); });
+$('fNf').addEventListener('click',function(){ S.filter='nf'; $('fNf').classList.add('on'); $('fAll').classList.remove('on'); renderRows(); });
+$('dlBtn').addEventListener('click',function(){
+  if(!S.out) return;
+  var url=URL.createObjectURL(S.out), a=document.createElement('a');
+  a.href=url; a.download=S.outName; document.body.appendChild(a); a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1500);
+  log('Exported '+S.outName,'ok');
+});
+$('dlgX').addEventListener('click',closeCatalogue);
+$('dlgQ').addEventListener('input',renderCatalogue);
+$('ovl').addEventListener('click',function(e){ if(e.target===$('ovl')) closeCatalogue(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeCatalogue(); });
+if(typeof DecompressionStream==='undefined'||typeof CompressionStream==='undefined'){
+  alertBox('err','This browser cannot open Excel files','It has no built-in zip support. Use a current Chrome, Edge, or Safari.');
+}else{
+  renderBrands();
+  $('sideCount').textContent=MASTER_N.toLocaleString();
+  log('Ready · '+CUR.label.replace(/&amp;/g,'&')+' master has '+MASTER_N.toLocaleString()+' thread codes','step');
+}
+})();
+</script>
+</body>
+</html>
