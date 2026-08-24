@@ -563,13 +563,13 @@
   <section class="card anchor" id="anchorCard">
     <div class="intake-head">
       <span class="step plus">+</span>
-      <h2>Fabric code anchor <span class="opt">optional</span></h2>
-      <span class="hint">vlookup → Alternate Code</span>
+      <h2>Fabric &amp; trim code anchor <span class="opt">optional</span></h2>
+      <span class="hint">vlookup → Item code / Item description</span>
     </div>
     <label class="drop sm" id="anchorDrop">
       <input type="file" id="anchorFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
       <span class="drop-title">Drop <b>Fabric code.xlsx</b>, or <b>click to browse</b></span>
-      <span class="note">Used for FABRIC rows only: matches Item Description + Color (exact, then fuzzy) to fill their Alternate Code. Without it, fabric rows stay blank. All other rows always use the code before the dash in Material.</span>
+      <span class="note">Reads both sheets. Fabric sheet: matches Item Description + Color (exact, then fuzzy) to fill Alternate Code, Item code and Item description on FABRIC rows. Trim sheet: Alternate Code always comes from the code before the dash in Material; matches that code + Color + Size to fill Item code and Item description on all other rows. Without a matching sheet, those columns stay blank.</span>
     </label>
     <div class="anchor-status" id="anchorStatus"><span class="as-txt">No anchor loaded.</span></div>
   </section>
@@ -5673,8 +5673,10 @@ function isThread(it){ return /THREAD/i.test(it&&it.section||"") || /^(ST|BT|BH|
    When loaded, each BOM row's Alternate Code is resolved by a FUZZY match on that
    row's Item Description + Color. Without the anchor the column stays blank. */
 let FABLOOKUP=null;            // [{descN,colorN,code,sapCode,sapDes,descRaw,colorRaw}]
+let TRIMLOOKUP=null;           // [{codeN,colorN,sizeN,acodeRaw,colorRaw,sizeRaw,sapCode,sapDes}]
 function _fcNorm(s){ return String(s==null?"":s).toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim(); }
 function _fcColor(s){ s=String(s==null?"":s).trim(); const i=s.lastIndexOf("-"); if(i>0 && /^[a-z]{0,3}\d/i.test(s.slice(i+1).trim())) s=s.slice(0,i); return _fcNorm(s); }
+function _fcSize(s){ return String(s==null?"":s).toLowerCase().replace(/[^a-z0-9]+/g,"").trim(); }
 function _fcDice(a,b){ // token Dice coefficient on normalized strings
   const A=a?a.split(" ").filter(Boolean):[], B=b?b.split(" ").filter(Boolean):[];
   if(!A.length||!B.length) return 0;
@@ -5697,6 +5699,26 @@ function fabricCodeMatch(desc,color){
   return bestS>=0.6 ? best : null;
 }
 function fabricCodeLookup(desc,color){ const m=fabricCodeMatch(desc,color); return m?m.code:""; }
+/* Trim sheet: keyed on Alternate Code (the anchor — near enough to exact, via
+   the same scorer used elsewhere, which is 1 only on an exact/near-exact match
+   for a single-token string), then Color + Size pick the right variant among
+   rows sharing that code (a code alone can repeat across colors/sizes). */
+function trimCodeMatch(code,color,size){
+  if(!TRIMLOOKUP||!TRIMLOOKUP.length) return null;
+  const qc=_fcNorm(code); if(!qc) return null;
+  const cands=TRIMLOOKUP.filter(e=>e.codeN===qc);           // alternate code is the anchor — exact match only
+  if(!cands.length) return null;
+  const qs=_fcSize(size);
+  const pool=qs?cands.filter(e=>e.sizeN===qs):cands;        // a stated size must match exactly among same-code rows; no size match → no guess (wrong size is a wrong SAP code, not a near miss)
+  if(!pool.length) return null;
+  const qcol=_fcColor(color);
+  let best=null, bestS=-1;
+  for(const e of pool){
+    const os=(!qcol&&!e.colorN)?1:(!qcol||!e.colorN)?0.5:_fcScore(qcol,e.colorN);
+    if(os>bestS){ bestS=os; best=e; }
+  }
+  return bestS>=0.5 ? best : null;   // reject if even the closest colour in the pool doesn't meaningfully agree (needs at least half the colour's words in common) — a same-code, wrong-colour row is a wrong SAP code, not a near miss
+}
 /* Alternate Code rules:
    — FABRIC rows (Item column = FABRICS): looked up from the fabric-code workbook
      by Item Description + Color (exact match first, fuzzy fallback). No workbook
@@ -5713,8 +5735,9 @@ function altIsGuess(it){ return isFabricItem(it) && !!altCode(it); }
 /* One BOM/Thread row (shared by both sheets + previews) — same column order. */
 function bomVals(c,sfc,it){
   const size=[it.csize,it.sunit].filter(Boolean).join(" ").trim();
-  /* fabric rows also pull Item code / Item description (workbook "Item Code" / "Item Name") */
-  const m=isFabricItem(it)?fabricCodeMatch(it.desc,it.color):null;
+  /* fabric rows pull Item code / Item description from the fabric sheet (desc+color);
+     every other row pulls them from the trim sheet (alternate code+color+size). */
+  const m=isFabricItem(it)?fabricCodeMatch(it.desc,it.color):trimCodeMatch(altCode(it),it.color,size);
   return [c.Gender,c.Product,c.Season,sfc,c.StyleName,c.FabricName,c.WashName,"","",
           itemName(it.section),altCode(it),it.desc,it.color,size,it.qty,
           (m&&m.sapCode)||"",(m&&m.sapDes)||"",""];
@@ -5898,24 +5921,42 @@ function parseTdsPage(rows, state){
   return items;
 }
 
-/* ---------------- composition + care ---------------- */
-function parseCompCare(pagesText){
-  for(let i=0;i<pagesText.length;i++){
-    const t=pagesText[i];
-    if(t.includes("Composition")&&t.includes("Care Labels")){
-      const comp=[], care=[]; let mode=null;
-      for(const ln of t.split("\n")){
-        const s=ln.trim();
-        if(s==="Composition"){mode="comp";continue;}
-        if(s==="Care Labels"){mode="care";continue;}
-        if(s.startsWith("Page ")) continue;
-        if(mode==="comp"){ if(s&&!s.includes("%")) comp.push([s,""]); else if(s.includes("%")&&comp.length) comp[comp.length-1][1]=s; }
-        else if(mode==="care"){ if(s) care.push(s); }
-      }
-      return {comp,care,page:i};
+/* ---------------- composition + care ----------------
+   Both live on their OWN dedicated worksheet page, each marked only by
+   a standalone title row ("Composition" / "Care Labels") — they are
+   NOT together on one page (that was the old, wrong assumption).
+   Composition alternates part-label rows ("Shell", "Pocket Lining"...)
+   with a %-breakdown row that can wrap onto a second row (it ends in a
+   dangling "-" when it does). Care Labels rows hold several icon
+   captions side by side, so they're read from the raw per-row word
+   array (not the flattened line) or multi-caption rows glue into one
+   string with no way to tell captions apart. */
+function parseCompositionRows(rows){
+  const comp=[]; let cur=null, open=false;
+  const rowLine=r=>r.map(w=>w.text).join(" ").trim();
+  for(const r of rows){
+    const line=rowLine(r);
+    if(!line) continue;
+    if(/^Page\s+\d+\s+of\s+\d+$/i.test(line)) break;
+    if(open){ cur[1]=(cur[1]+" "+line).trim(); open=/-\s*$/.test(line); continue; }
+    if(/^\d+(\.\d+)?%/.test(line)){
+      if(cur){ cur[1]=line; open=/-\s*$/.test(line); if(!open){ comp.push(cur); cur=null; } }
+      else comp.push(["",line]);
+    } else { if(cur) comp.push(cur); cur=[line,""]; }
+  }
+  if(cur) comp.push(cur);
+  return comp;
+}
+function parseCareRows(rows){
+  const care=[];
+  for(const r of rows){
+    for(const w of r){
+      const s=(w.text||"").trim(); if(!s) continue;
+      if(/^Page\s+\d+\s+of\s+\d+$/i.test(s)) return care;
+      care.push(s);
     }
   }
-  return {comp:[],care:[],page:-1};
+  return care;
 }
 
 /* StyleName from the BOM page header band (reliable across all books/layouts) */
@@ -5930,8 +5971,8 @@ async function extractPdf(file){
   const buf=await file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
   try{
-    const pagesText=[]; let coverRows=null; let items=[]; const state={cur:""}; let bandName="";
-    let carePageNum=-1, careRows=null, careVp=null;
+    let coverRows=null; let items=[]; const state={cur:""}; let bandName="";
+    let carePageNum=-1, careRows=null, careVp=null, comp=[], care=[];
     for(let p=1;p<=pdf.numPages;p++){
       const page=await pdf.getPage(p);
       const vp=page.getViewport({scale:1});
@@ -5939,24 +5980,29 @@ async function extractPdf(file){
       const words=pageWords(tc, vp.height);
       const rows=clusterRows(words,4);
       const txt=pageText(rows);
-      pagesText.push(txt);
       if(p===1) coverRows=rows;
       if(txt.includes("TDS Worksheet")&&txt.includes("Material")&&txt.includes("Index")){
         items=items.concat(parseTdsPage(rows,state));
         if(!bandName) bandName=bandStyleName(rows);
       }
-      if(txt.includes("Composition")&&txt.includes("Care Labels")&&carePageNum<0){ carePageNum=p; careRows=rows; }
+      if(!comp.length){
+        const ci=rows.findIndex(r=>r.map(w=>w.text).join(" ").trim()==="Composition");
+        if(ci>=0) comp=parseCompositionRows(rows.slice(ci+1));
+      }
+      if(carePageNum<0){
+        const cai=rows.findIndex(r=>r.map(w=>w.text).join(" ").trim()==="Care Labels");
+        if(cai>=0){ carePageNum=p; careRows=rows; care=parseCareRows(rows.slice(cai+1)); }
+      }
       page.cleanup();
     }
     const cover=coverFields(coverRows);
     if(bandName) cover.StyleName=bandName;
-    const cc=parseCompCare(pagesText);
     // render care icon strip from the care page
     let careIcon=null;
     if(carePageNum>0){
       try{ careIcon=await renderCareIcons(pdf, carePageNum, careRows); }catch(e){ log("  (care icon render failed: "+e.message+")"); }
     }
-    return {file:file.name, cover, items, comp:cc.comp, care:cc.care, careIcon};
+    return {file:file.name, cover, items, comp, care, careIcon};
   } finally {
     try{ pdf.destroy(); }catch(e){}   // release fonts/images/page cache — without this, memory piles up across files and parsing degrades after a couple dozen techpacks
   }
@@ -6209,7 +6255,7 @@ if(anchorDrop&&anchorInput){
 function setAnchorStatus(msg, ok){
   const el=$("#anchorStatus"); if(!el) return;
   el.classList.toggle("ok",!!ok);
-  el.innerHTML="<span class='as-txt'>"+esc(msg)+"</span>"+((FABLOOKUP&&FABLOOKUP.length)?"<button class='btn ghost as-clr' id='anchorClr'>Remove</button>":"");
+  el.innerHTML="<span class='as-txt'>"+esc(msg)+"</span>"+(((FABLOOKUP&&FABLOOKUP.length)||(TRIMLOOKUP&&TRIMLOOKUP.length))?"<button class='btn ghost as-clr' id='anchorClr'>Remove</button>":"");
   const clr=$("#anchorClr"); if(clr) clr.addEventListener("click",clearAnchor);
 }
 function applyAnchorRefresh(){ if(DATA&&DATA.length){ updateMeta(); renderPreview(currentTab()); renderExport(); } }
@@ -6220,37 +6266,70 @@ async function loadAnchor(file){
     setAnchorStatus("Reading "+file.name+"…",false);
     const wb=new ExcelJS.Workbook();
     await wb.xlsx.load(await file.arrayBuffer());
-    const ws=wb.worksheets[0];
-    let hdr=0,cD=0,cC=0,cF=0,cI=0,cN=0;
-    ws.eachRow((row,rn)=>{
-      if(hdr) return;
-      let di=0,ci=0,fi=0,ii=0,ni=0;
-      row.eachCell((cell,col)=>{
-        const t=String(cell.text||cell.value||"").trim().toLowerCase();
-        if(/item\s*desc/.test(t)) di=col;
-        else if(/^colou?r/.test(t)) ci=col;
-        else if(/fabric\s*code/.test(t)) fi=col;
-        else if(/^item\s*code/.test(t)) ii=col;
-        else if(/^item\s*name/.test(t)) ni=col;
+    const fabOut=[], trimOut=[]; let fabHdr=false, trimHdr=false, fabNames=false, trimNames=false;
+    for(const ws of wb.worksheets){
+      let hdr=0,cD=0,cC=0,cF=0,cI=0,cN=0;
+      ws.eachRow((row,rn)=>{
+        if(hdr) return;
+        let di=0,ci=0,fi=0,ii=0,ni=0;
+        row.eachCell((cell,col)=>{
+          const t=String(cell.text||cell.value||"").trim().toLowerCase();
+          if(/item\s*desc/.test(t)) di=col;
+          else if(/^colou?r/.test(t)) ci=col;
+          else if(/fabric\s*code/.test(t)) fi=col;
+          else if(/^item\s*code/.test(t)) ii=col;
+          else if(/^item\s*name/.test(t)) ni=col;
+        });
+        if(di&&ci&&fi){ hdr=rn; cD=di; cC=ci; cF=fi; cI=ii; cN=ni; }
       });
-      if(di&&ci&&fi){ hdr=rn; cD=di; cC=ci; cF=fi; cI=ii; cN=ni; }
-    });
-    if(!hdr){ setAnchorStatus("Couldn't find Item Description / Color / Fabric code columns.",false); return; }
-    const out=[];
-    ws.eachRow((row,rn)=>{
-      if(rn<=hdr) return;
-      const g=col=>String(row.getCell(col).text||row.getCell(col).value||"").trim();
-      const desc=g(cD), color=g(cC), code=g(cF);
-      if(code && (desc||color)) out.push({descRaw:desc,colorRaw:color,code,sapCode:cI?g(cI):"",sapDes:cN?g(cN):"",descN:_fcNorm(desc),colorN:_fcColor(color)});
-    });
-    FABLOOKUP=out;
-    setAnchorStatus(out.length+" fabric code"+(out.length===1?"":"s")+" loaded from "+file.name+((cI&&cN)?"":" (no Item Code / Item Name columns — those stay blank)")+".", true);
-    log("Loaded fabric-code anchor: "+out.length+" rows from "+file.name+".");
+      if(hdr){
+        fabHdr=true; fabNames=!!(cI&&cN);
+        ws.eachRow((row,rn)=>{
+          if(rn<=hdr) return;
+          const g=col=>String(row.getCell(col).text||row.getCell(col).value||"").trim();
+          const desc=g(cD), color=g(cC), code=g(cF);
+          if(code && (desc||color)) fabOut.push({descRaw:desc,colorRaw:color,code,sapCode:cI?g(cI):"",sapDes:cN?g(cN):"",descN:_fcNorm(desc),colorN:_fcColor(color)});
+        });
+        continue;   // a sheet is either fabric- or trim-shaped, not both
+      }
+      let thdr=0,tA=0,tC=0,tS=0,tI=0,tN=0;
+      ws.eachRow((row,rn)=>{
+        if(thdr) return;
+        let ai=0,ci=0,si=0,ii=0,ni=0;
+        row.eachCell((cell,col)=>{
+          const t=String(cell.text||cell.value||"").trim().toLowerCase();
+          if(/^alternate\s*code/.test(t)) ai=col;
+          else if(/^colou?r/.test(t)) ci=col;
+          else if(/^size/.test(t)) si=col;
+          else if(/^item\s*code/.test(t)) ii=col;
+          else if(/item\s*desc/.test(t)) ni=col;   // sheet has TWO "item desc…" headers; rightmost (Item description) wins over the earlier short Item Description column, which is what we want
+        });
+        if(ai&&ci&&si){ thdr=rn; tA=ai; tC=ci; tS=si; tI=ii; tN=ni; }
+      });
+      if(thdr){
+        trimHdr=true; trimNames=!!(tI&&tN);
+        ws.eachRow((row,rn)=>{
+          if(rn<=thdr) return;
+          const g=col=>String(row.getCell(col).text||row.getCell(col).value||"").trim();
+          const acode=g(tA), color=g(tC), size=g(tS);
+          if(acode) trimOut.push({acodeRaw:acode,colorRaw:color,sizeRaw:size,sapCode:tI?g(tI):"",sapDes:tN?g(tN):"",codeN:_fcNorm(acode),colorN:_fcColor(color),sizeN:_fcSize(size)});
+        });
+      }
+    }
+    if(!fabHdr && !trimHdr){ setAnchorStatus("Couldn't find a Fabric (Item Description/Color/Fabric code) or Trim (Alternate Code/Color/Size) sheet.",false); return; }
+    FABLOOKUP=fabOut.length?fabOut:null;
+    TRIMLOOKUP=trimOut.length?trimOut:null;
+    const bits=[];
+    if(fabOut.length) bits.push(fabOut.length+" fabric code"+(fabOut.length===1?"":"s"));
+    if(trimOut.length) bits.push(trimOut.length+" trim code"+(trimOut.length===1?"":"s"));
+    const missingNames=(fabHdr&&!fabNames)||(trimHdr&&!trimNames);
+    setAnchorStatus((bits.length?bits.join(" · "):"0 codes")+" loaded from "+file.name+(missingNames?" (a sheet is missing its Item code/description columns — those stay blank)":"")+".", bits.length>0);
+    log("Loaded anchor: "+(bits.length?bits.join(", "):"nothing usable")+" from "+file.name+".");
     applyAnchorRefresh();
   }catch(err){ setAnchorStatus("Could not read workbook: "+(err&&err.message||err),false); }
 }
 function clearAnchor(){
-  FABLOOKUP=null;
+  FABLOOKUP=null; TRIMLOOKUP=null;
   try{ localStorage.removeItem(ANCHOR_KEY); }catch(e){}
   setAnchorStatus("No anchor loaded.",false);
   log("Removed fabric-code anchor.");
@@ -6317,8 +6396,8 @@ function removeFile(i){
 }
 function clearAll(){
   FILES=[]; DATA=[]; ALLDATA=[]; DUPES=[]; INCLUDE_DUPS=false; fileInput.value="";
-  /* full reset: also drop the fabric-code anchor so a fresh session starts truly blank */
-  FABLOOKUP=null;
+  /* full reset: also drop the fabric/trim code anchor so a fresh session starts truly blank */
+  FABLOOKUP=null; TRIMLOOKUP=null;
   try{ localStorage.removeItem(ANCHOR_KEY); }catch(e){}
   if(typeof setAnchorStatus==="function") setAnchorStatus("No anchor loaded.",false);
   { const _da=$("#dupAlerts"); if(_da){ _da.hidden=true; _da.innerHTML=""; } }
