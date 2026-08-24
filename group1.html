@@ -220,6 +220,12 @@
   .intake-actions{display:flex;gap:8px;flex:none}
   .intake-pick{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
   .chip-folder{flex:none;font-family:var(--mono);font-size:10.5px;color:var(--mut-2);padding:2px 6px;border-radius:var(--r-sm);background:rgba(143,153,168,0.18)}
+  .chip.flagged{box-shadow:inset 0 0 0 1px rgba(200,118,25,0.35)}
+  .chip-flag{flex:none;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:2px 6px;border-radius:var(--r-sm)}
+  .chip-flag.timeout{color:var(--orange-hi);background:rgba(200,118,25,0.18)}
+  .chip-flag.error{color:var(--red-hi);background:rgba(205,66,70,0.16)}
+  .retry{flex:none;cursor:pointer;color:var(--mut-2);width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm);line-height:1;font-size:13px;transition:background var(--t) var(--ease),color var(--t) var(--ease)}
+  .retry:hover{background:var(--surface-3);color:var(--txt)}
 
   /* ============================ BUTTONS ============================ */
   button{font-family:var(--sans)}
@@ -5923,32 +5929,37 @@ function bandStyleName(rows){
 async function extractPdf(file){
   const buf=await file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-  const pagesText=[]; let coverRows=null; let items=[]; const state={cur:""}; let bandName="";
-  let carePageNum=-1, careRows=null, careVp=null;
-  for(let p=1;p<=pdf.numPages;p++){
-    const page=await pdf.getPage(p);
-    const vp=page.getViewport({scale:1});
-    const tc=await page.getTextContent();
-    const words=pageWords(tc, vp.height);
-    const rows=clusterRows(words,4);
-    const txt=pageText(rows);
-    pagesText.push(txt);
-    if(p===1) coverRows=rows;
-    if(txt.includes("TDS Worksheet")&&txt.includes("Material")&&txt.includes("Index")){
-      items=items.concat(parseTdsPage(rows,state));
-      if(!bandName) bandName=bandStyleName(rows);
+  try{
+    const pagesText=[]; let coverRows=null; let items=[]; const state={cur:""}; let bandName="";
+    let carePageNum=-1, careRows=null, careVp=null;
+    for(let p=1;p<=pdf.numPages;p++){
+      const page=await pdf.getPage(p);
+      const vp=page.getViewport({scale:1});
+      const tc=await page.getTextContent();
+      const words=pageWords(tc, vp.height);
+      const rows=clusterRows(words,4);
+      const txt=pageText(rows);
+      pagesText.push(txt);
+      if(p===1) coverRows=rows;
+      if(txt.includes("TDS Worksheet")&&txt.includes("Material")&&txt.includes("Index")){
+        items=items.concat(parseTdsPage(rows,state));
+        if(!bandName) bandName=bandStyleName(rows);
+      }
+      if(txt.includes("Composition")&&txt.includes("Care Labels")&&carePageNum<0){ carePageNum=p; careRows=rows; }
+      page.cleanup();
     }
-    if(txt.includes("Composition")&&txt.includes("Care Labels")&&carePageNum<0){ carePageNum=p; careRows=rows; }
+    const cover=coverFields(coverRows);
+    if(bandName) cover.StyleName=bandName;
+    const cc=parseCompCare(pagesText);
+    // render care icon strip from the care page
+    let careIcon=null;
+    if(carePageNum>0){
+      try{ careIcon=await renderCareIcons(pdf, carePageNum, careRows); }catch(e){ log("  (care icon render failed: "+e.message+")"); }
+    }
+    return {file:file.name, cover, items, comp:cc.comp, care:cc.care, careIcon};
+  } finally {
+    try{ pdf.destroy(); }catch(e){}   // release fonts/images/page cache — without this, memory piles up across files and parsing degrades after a couple dozen techpacks
   }
-  const cover=coverFields(coverRows);
-  if(bandName) cover.StyleName=bandName;
-  const cc=parseCompCare(pagesText);
-  // render care icon strip from the care page
-  let careIcon=null;
-  if(carePageNum>0){
-    try{ careIcon=await renderCareIcons(pdf, carePageNum, careRows); }catch(e){ log("  (care icon render failed: "+e.message+")"); }
-  }
-  return {file:file.name, cover, items, comp:cc.comp, care:cc.care, careIcon};
 }
 
 async function renderCareIcons(pdf, pageNum, rows){
@@ -6294,8 +6305,9 @@ function renderFiles(){
   $("#intake").classList.toggle("has-files", has);
   if(!has){ el.innerHTML="No files loaded."; return; }
   el.innerHTML="<div class='files-head'><span class='files-count'>"+FILES.length+" techpack"+(FILES.length>1?"s":"")+" loaded</span><span class='files-hint'>click × to remove</span></div>"+
-    "<div class='chips'>"+FILES.map((e,i)=>"<span class='chip' title='"+esc((e.folder?e.folder+"/":"")+e.name)+"'>"+(e.folder?"<span class='chip-folder'>"+esc(e.folder.length>22?"…"+e.folder.slice(-22):e.folder)+"</span>":"")+"<span class='chip-name'>"+esc(e.name.length>46?e.name.slice(0,46)+"…":e.name)+"</span><span class='chip-size'>"+fmtKB(e.size)+"</span><span class='rm' data-i='"+i+"' title='Remove this file'>×</span></span>").join("")+"</div>";
+    "<div class='chips'>"+FILES.map((e,i)=>"<span class='chip"+((e.status==="error"||e.status==="timeout")?" flagged":"")+"' title='"+esc((e.folder?e.folder+"/":"")+e.name+(e.errorMsg?" — "+e.errorMsg:""))+"'>"+(e.folder?"<span class='chip-folder'>"+esc(e.folder.length>22?"…"+e.folder.slice(-22):e.folder)+"</span>":"")+"<span class='chip-name'>"+esc(e.name.length>46?e.name.slice(0,46)+"…":e.name)+"</span><span class='chip-size'>"+fmtKB(e.size)+"</span>"+((e.status==="error"||e.status==="timeout")?"<span class='chip-flag "+e.status+"'>"+(e.status==="timeout"?"Timed out":"Error")+"</span><span class='retry' data-r='"+i+"' title='Retry this file'>↻</span>":"")+"<span class='rm' data-i='"+i+"' title='Remove this file'>×</span></span>").join("")+"</div>";
   el.querySelectorAll(".rm").forEach(x=>x.addEventListener("click",()=>removeFile(+x.dataset.i)));
+  el.querySelectorAll(".retry").forEach(x=>x.addEventListener("click",ev=>{ ev.stopPropagation(); retryFile(+x.dataset.r); }));
 }
 function removeFile(i){
   const r=FILES.splice(i,1)[0];
@@ -6320,19 +6332,32 @@ function clearAll(){
   setLog("Cleared. Choose techpack PDFs to begin.");
 }
 
+const FILE_READ_TIMEOUT_MS=45000; // slow/cold network-share reads shouldn't hang the whole batch
+function withTimeout(promise, ms){
+  let t;
+  const timeout=new Promise((_,rej)=>{ t=setTimeout(()=>rej(new Error("TIMEOUT")), ms); });
+  return Promise.race([promise, timeout]).finally(()=>clearTimeout(t));
+}
 async function runParse(){
   if(!FILES.length) return;
   if(!window.__LIBS_READY){ setLog("Engine still loading… try again in a second."); return; }
   $("#parseBtn").disabled=true; setLog("Parsing…"); DATA=[];
+  let nFailed=0;
   for(let _fi=0; _fi<FILES.length; _fi++){
-    const e=FILES[_fi]; const f=e.file;
-    try{ log("• "+e.name.slice(0,52)); const d=await extractPdf(f); d.file=e.name; d._fileIdx=_fi; d._fileRef=e;
+    const e=FILES[_fi]; const f=e.file; e.status="pending"; e.errorMsg=null;
+    try{ log("• "+e.name.slice(0,52)); const d=await withTimeout(extractPdf(f), FILE_READ_TIMEOUT_MS); d.file=e.name; d._fileIdx=_fi; d._fileRef=e;
       log("    cover: "+[d.cover.StyleCode,d.cover.StyleName,d.cover.Season,d.cover.Colorway].filter(Boolean).join(" | "));
       log("    BOM items: "+d.items.length+"   composition lines: "+d.comp.length+"   care icon: "+(d.careIcon?"yes":"no"));
-      DATA.push(d);
-    }catch(err){ log("    ! error: "+err.message); }
+      DATA.push(d); e.status="ok";
+    }catch(err){
+      const timedOut=err&&err.message==="TIMEOUT";
+      e.status=timedOut?"timeout":"error"; nFailed++;
+      e.errorMsg=timedOut?("Timed out after "+Math.round(FILE_READ_TIMEOUT_MS/1000)+"s reading the file — likely a slow network/shared-drive read."):(err&&err.message||String(err));
+      log("    ✕ "+(timedOut?"timed out — possibly a slow network/shared drive":("error: "+e.errorMsg)));
+    }
   }
-  log("Done. Parsed "+DATA.length+" techpack(s). Review below, then export.");
+  renderFiles();
+  log("Done. Parsed "+DATA.length+" of "+FILES.length+" techpack(s)."+(nFailed?(" "+nFailed+" failed to read — flagged below, click ↻ to retry."):" Review below, then export."));
   detectDuplicates();   // tags ALLDATA, prunes full duplicates from DATA, renders graceful notices
   $("#parseBtn").disabled=false;
   $$(".exp").forEach(b=>b.disabled=!DATA.length);
@@ -6348,6 +6373,28 @@ async function runParse(){
   renderExport();
 }
 $("#parseBtn").addEventListener("click", runParse);
+async function retryFile(i){
+  const e=FILES[i]; if(!e || e.status==="pending") return;
+  e.status="pending"; e.errorMsg=null; renderFiles();
+  log("↻ retrying "+e.name.slice(0,52));
+  try{
+    const d=await withTimeout(extractPdf(e.file), FILE_READ_TIMEOUT_MS);
+    d.file=e.name; d._fileIdx=i; d._fileRef=e; e.status="ok";
+    log("    cover: "+[d.cover.StyleCode,d.cover.StyleName,d.cover.Season,d.cover.Colorway].filter(Boolean).join(" | "));
+    DATA.push(d);
+    detectDuplicates();
+    $$(".exp").forEach(b=>b.disabled=!DATA.length);
+    $("#results").style.display="flex";
+    const _at=currentTab();
+    renderPreview(_at); updateMeta(); renderExport();
+  }catch(err){
+    const timedOut=err&&err.message==="TIMEOUT";
+    e.status=timedOut?"timeout":"error";
+    e.errorMsg=timedOut?("Timed out after "+Math.round(FILE_READ_TIMEOUT_MS/1000)+"s — likely a slow network/shared-drive read."):(err&&err.message||String(err));
+    log("    ✕ retry failed: "+e.errorMsg);
+  }
+  renderFiles();
+}
 
 $$(".exp").forEach(b=>b.addEventListener("click",()=>exportMode(b.dataset.mode)));
 $$(".tab").forEach(t=>t.addEventListener("click",()=>{ $$(".tab").forEach(x=>x.classList.remove("active")); t.classList.add("active"); renderPreview(t.dataset.t); }));
@@ -6468,15 +6515,14 @@ function renderPreview(which){
 }
 
 /* ============================================================
-   Duplicate detection + graceful notices (additive)
-   Two cases, surfaced as callouts above the Review table:
-     FULL duplicate  — same SFC AND same extracted content, compared
-        whitespace-insensitively so trivial formatting/tokenisation
-        diffs (e.g. "-->" vs "-- >") don't count. One copy is kept;
-        the user deletes the redundant file or keeps both.
-     SFC duplicate   — same SFC but extracted rows genuinely differ
-        (edited comment, quantity tweak, translated revision). Both
-        kept; purely a heads-up.
+   Version detection (additive) — one rule: files are grouped by
+   source subfolder (or, for loose uploads with no folder, by their
+   Style-Fabric-Colorway combo). Within a group, only the LATEST-dated
+   file (the cover's top-right timestamp) is kept; every other file in
+   that group is superseded — including an exact date tie, where
+   whichever file was seen first is kept and the rest are dropped.
+   Superseded files are excluded from extraction by default but stay
+   visible above the table with an override.
    ============================================================ */
 let ALLDATA=[], DUPES=[], INCLUDE_DUPS=false;
 const _DA_ICO={
@@ -6486,59 +6532,40 @@ const _DA_ICO={
   check:"<svg viewBox='0 0 16 16'><path d='M14 3c-.28 0-.53.11-.71.29L6 10.59l-2.29-2.3a1.003 1.003 0 0 0-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l8-8A1.003 1.003 0 0 0 14 3'></path></svg>"
 };
 function _squash(s){ return (s==null?"":String(s)).toLowerCase().replace(/\s+/g,""); }
-function contentSig(d){
-  const c=d.cover||{};
-  const cover=[c.StyleCode,c.Season,c.Colorway,c.MainFabric,c.Gender,c.Product].map(_squash).join("|");
-  const items=(d.items||[]).map(it=>[it.code,it.desc,it.comment,it.csize,it.sunit,it.color,it.sec].map(_squash).join("~")).join("\u00a7");
-  const comp=(d.comp||[]).map(x=>(Array.isArray(x)?x:[x]).map(_squash).join("~")).join("\u00a7");
-  const care=d.careIcon?("care"+String((d.careIcon.dataUrl||"").length)):"nocare";
-  return cover+"#"+items+"#"+comp+"#"+care;
-}
 function _sfcKey(d){ return _squash(sfcGuess(d.cover||{})); }
 function _dateTS(d){ const t=d&&d.cover&&d.cover.DateTS; return (typeof t==="number"&&!isNaN(t))?t:-Infinity; }
 function _dateLabel(d){ const r=d&&d.cover&&d.cover.DateRaw; return r?r.replace(/\s+at\s+.*$/i,""):""; }
 function _shortName(n){ n=String(n||""); return n.length>44?n.slice(0,44)+"\u2026":n; }
 function _labelFor(d){ const fo=d&&d._fileRef&&d._fileRef.folder; return (fo?fo+"/":"")+((d&&d.file)||""); }
+function _groupKey(d){ const fo=d&&d._fileRef&&d._fileRef.folder; return fo?("folder:"+_squash(fo)):("sfc:"+_sfcKey(d)); }
 function currentTab(){ const t=$(".tab.active"); return t?t.dataset.t:"style"; }
 
 function detectDuplicates(){
   ALLDATA=DATA.slice(); INCLUDE_DUPS=false;
   for(const d of ALLDATA){ d._dup=null; d._removed=false; d._kept=false; }
-  // Pass 1 — EXACT duplicates: same SFC AND identical extracted content. Keep one.
-  const bySig={};
-  let nFull=0;
-  for(const d of ALLDATA){
-    const sfc=_sfcKey(d); if(!sfc) continue;
-    const sigK=sfc+"::"+contentSig(d);
-    if(bySig[sigK]){ d._dup={kind:"full", of:bySig[sigK]}; nFull++; }
-    else bySig[sigK]=d;
-  }
-  // Pass 2 — SFC revisions: non-exact files sharing an SFC but differing in content.
-  // Keep only the LATEST-dated revision (top-right cover date); supersede the rest.
   const groups={};
   for(const d of ALLDATA){
-    if(d._dup&&d._dup.kind==="full") continue;
-    const sfc=_sfcKey(d); if(!sfc) continue;
-    (groups[sfc]||(groups[sfc]=[])).push(d);
+    if(!_sfcKey(d)) continue;   // no combo read at all — nothing to compare against
+    const key=_groupKey(d);
+    (groups[key]||(groups[key]=[])).push(d);
   }
-  let nSfc=0;
-  for(const sfc in groups){
-    const g=groups[sfc];
+  let nSup=0;
+  for(const key in groups){
+    const g=groups[key];
     if(g.length<2) continue;
     let keeper=g[0];
-    for(const d of g){ if(_dateTS(d)>_dateTS(keeper)) keeper=d; }
-    for(const d of g){ if(d===keeper) continue; d._dup={kind:"sfc", of:keeper}; nSfc++; }
+    for(const d of g){ if(_dateTS(d)>_dateTS(keeper)) keeper=d; }   // latest date wins; a tie keeps whichever was seen first
+    for(const d of g){ if(d===keeper) continue; d._dup={kind:"rev", of:keeper}; nSup++; }
   }
   recomputeActive();
   renderDupAlerts();
-  if(nFull) log("\u26a0 "+nFull+" identical techpack"+(nFull>1?"s":"")+" found \u2014 kept one copy (see notice above the table).");
-  if(nSfc)  log("\u26a0 "+nSfc+" older SFC revision"+(nSfc>1?"s":"")+" superseded \u2014 kept the latest-dated copy.");
+  if(nSup) log("\u26a0 "+nSup+" older techpack version"+(nSup>1?"s":"")+" superseded \u2014 kept the latest-dated file per folder.");
 }
 function recomputeActive(){
   DATA=ALLDATA.filter(d=>{
     if(d._removed) return false;
-    if(d._dup) return !!d._kept;  // exact copy OR superseded SFC revision: only if user opts to keep
-    return true;                 // originals + latest revisions always stay
+    if(d._dup) return !!d._kept;  // superseded version: only counted if the user opts to keep it
+    return true;                 // originals + latest versions always stay
   });
 }
 function refreshAfterDup(){ recomputeActive(); updateMeta(); renderPreview(currentTab()); renderExport(); renderDupAlerts(); }
@@ -6565,23 +6592,18 @@ function renderDupAlerts(){
   if(!dups.length){ box.hidden=true; box.innerHTML=""; return; }
   const n=dups.length;
   const rows=dups.map(({d,idx})=>{
-    const exact=d._dup.kind==="full";
     const partner=_labelFor(d._dup.of)||"another file";
     const kept=_docExtracted(d);
-    const tag=exact
-      ? "<span class='da-tag exact' title='Every extracted field matches another file'>Exact copy</span>"
-      : "<span class='da-tag sfc' title='Same SFC code, older revision \u2014 superseded by the latest-dated file'>Superseded</span>";
+    const tag="<span class='da-tag sfc' title='Older version in the same folder/combo \u2014 superseded by the latest-dated file'>Superseded</span>";
     const state=kept?"<span class='da-state kept'>Extracted</span>":"<span class='da-state excl'>Excluded</span>";
     const keepBtn=kept
       ? "<button class='btn ghost' disabled><span class='ic'>"+_DA_ICO.check+"</span>Extracted</button>"
       : "<button class='btn ghost' data-da='keep' data-id='"+idx+"'>Keep &amp; extract anyway</button>";
     const myDate=_dateLabel(d), ofDate=_dateLabel(d._dup.of);
     const sfcTxt=esc(sfcGuess(d.cover||{}));
-    const dateBits=exact
-      ? sfcTxt+((myDate||ofDate)?" \u00b7 this "+esc(myDate||"\u2014")+" \u00b7 copy "+esc(ofDate||"\u2014"):"")
-      : sfcTxt+(myDate?" \u00b7 "+esc(myDate):"")+(ofDate?" \u2192 latest "+esc(ofDate):"");
+    const dateBits=sfcTxt+(myDate?" \u00b7 "+esc(myDate):"")+(ofDate?" \u2192 latest "+esc(ofDate):"");
     return "<div class='da-row'>"+tag+
-      "<div class='da-row-main'><code>"+esc(_shortName(_labelFor(d)))+"</code><span class='da-rel'>"+(exact?"duplicate of":"superseded by")+"</span><code>"+esc(_shortName(partner))+"</code><span class='da-sfc'>"+dateBits+"</span></div>"+
+      "<div class='da-row-main'><code>"+esc(_shortName(_labelFor(d)))+"</code><span class='da-rel'>superseded by</span><code>"+esc(_shortName(partner))+"</code><span class='da-sfc'>"+dateBits+"</span></div>"+
       state+
       "<div class='da-row-actions'>"+keepBtn+
         "<button class='btn danger' data-da='del' data-id='"+idx+"'><span class='ic'>"+_DA_ICO.trash+"</span>Delete file</button>"+
@@ -6589,8 +6611,8 @@ function renderDupAlerts(){
   }).join("");
   box.hidden=false;
   box.innerHTML="<div class='dup-alert info'><span class='da-ico'>"+_DA_ICO.info+"</span><div class='da-body'>"+
-    "<div class='da-title'>"+n+" possible duplicate"+(n>1?"s":"")+" detected</div>"+
-    "<div class='da-text'>Files that share a Style-Fabric-Colorway (SFC) code. <b>Exact copy</b> — every extracted field matches, so one copy is left out to keep totals clean. <b>Superseded</b> — same code but content differs (an edited comment or translated revision), so only the latest-dated file is kept (by the date in the cover's top-right corner). Override below if needed.</div>"+
+    "<div class='da-title'>"+n+" older version"+(n>1?"s":"")+" superseded</div>"+
+    "<div class='da-text'>Files in the same folder (or sharing a Style-Fabric-Colorway code, for loose uploads) count as versions of one techpack — only the latest-dated file (the cover's top-right timestamp) is kept, including breaking ties by whichever was read first. The rest are excluded here. Override below if needed.</div>"+
     "<div class='da-list'>"+rows+"</div>"+
     "</div></div>";
   box.querySelectorAll("[data-da]").forEach(b=>b.addEventListener("click",()=>{
