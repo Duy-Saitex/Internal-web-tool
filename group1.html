@@ -218,6 +218,8 @@
   .rm{flex:none;cursor:pointer;color:var(--mut-2);width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm);line-height:1;font-size:15px;transition:background var(--t) var(--ease),color var(--t) var(--ease)}
   .rm:hover{background:var(--red);color:#fff}
   .intake-actions{display:flex;gap:8px;flex:none}
+  .intake-pick{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .chip-folder{flex:none;font-family:var(--mono);font-size:10.5px;color:var(--mut-2);padding:2px 6px;border-radius:var(--r-sm);background:rgba(143,153,168,0.18)}
 
   /* ============================ BUTTONS ============================ */
   button{font-family:var(--sans)}
@@ -533,9 +535,15 @@
     <label class="drop" id="drop">
       <input type="file" id="file" accept="application/pdf" multiple="">
       <span class="drop-ico"><span class="ic"><svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8m3 8c-.28 0-.53-.11-.71-.29L9 6.41V12c0 .55-.45 1-1 1s-1-.45-1-1V6.41l-1.29 1.3a1.003 1.003 0 0 1-1.42-1.42l3-3C7.47 3.11 7.72 3 8 3s.53.11.71.29l3 3A1.003 1.003 0 0 1 11 8"></path></svg></span></span>
-      <span class="drop-title">Drop PDFs here, or <b>click to browse</b></span>
+      <span class="drop-title">Drop PDFs here</span>
       <span class="note">Several techpacks at once · parsing runs locally, nothing is uploaded</span>
     </label>
+    <div class="intake-pick">
+      <button type="button" id="fileBtn" class="btn ghost"><span class="ic"><svg viewBox="0 0 16 16"><path d="M9 0H3c-.55 0-1 .45-1 1v14c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V5zm3 14H4V2h4v4h4z"></path></svg></span>Choose files…</button>
+      <button type="button" id="folderBtn" class="btn ghost"><span class="ic"><svg viewBox="0 0 16 16"><path d="M15 4H7.71L6.85 2.3c-.17-.18-.42-.3-.7-.3H1c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h14c.55 0 1-.45 1-1V5c0-.55-.45-1-1-1"></path></svg></span>Choose folder…</button>
+      <input type="file" id="folderInput" webkitdirectory="" directory="" multiple="" hidden="">
+      <span class="note">Folder pulls every PDF from it and all subfolders, then keeps only the newest-dated techpack per style + fabric + colorway</span>
+    </div>
     <div class="intake-foot">
       <div class="files" id="files">No files loaded.</div>
       <div class="intake-actions">
@@ -6168,11 +6176,14 @@ function log(m){ _tlRow(m); }
 function setLog(m){ const el=$("#log"); if(el){ el.classList.add("timeline"); el.innerHTML=""; } _tlPrev=0; _tlRow(m); }
 
 function initApp(){
-const drop=$("#drop"), fileInput=$("#file");
+const drop=$("#drop"), fileInput=$("#file"), folderInput=$("#folderInput");
 ["dragenter","dragover"].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add("hover");}));
 ["dragleave","drop"].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove("hover");}));
 drop.addEventListener("drop",ev=>{ addFiles(ev.dataTransfer.files); });
 fileInput.addEventListener("change",ev=>addFiles(ev.target.files));
+$("#fileBtn").addEventListener("click", ()=>fileInput.click());
+$("#folderBtn").addEventListener("click", ()=>folderInput.click());
+folderInput.addEventListener("change",ev=>addFilesFromFolder(ev.target.files));
 $("#clearBtn").addEventListener("click", ()=>clearAll());
 
 /* ---- fabric-code anchor (optional vlookup source for Alternate Code) ---- */
@@ -6246,6 +6257,19 @@ async function sha256(file){
     return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("");
   }catch(e){ return "ns:"+file.name+"|"+file.size; }   // fallback if crypto.subtle unavailable
 }
+function addFilesFromFolder(list){
+  const all=[...list];
+  const isJunk=f=>{ const p=f.webkitRelativePath||f.name; return /(^|\/)(\.|~\$|__MACOSX)/.test(p) || /(^|\/)(Thumbs\.db|desktop\.ini)$/i.test(p); };
+  const pdfs=all.filter(f=>/\.pdf$/i.test(f.name) && !isJunk(f));
+  pdfs.forEach(f=>{
+    const parts=(f.webkitRelativePath||f.name).split("/"); parts.pop();
+    f._tpFolder=parts.slice(1).join("/")||parts[0]||"";
+  });
+  folderInput.value="";
+  if(!pdfs.length){ log("⚠ No PDF files found in that folder."); return; }
+  log("Scanned folder — "+pdfs.length+" PDF"+(pdfs.length>1?"s":"")+" found across all subfolders. Parsing each to find the newest per style + fabric + colorway…");
+  addFiles(pdfs);
+}
 async function addFiles(list){
   const incoming=[...list].filter(f=>/\.pdf$/i.test(f.name));
   fileInput.value="";                              // allow re-selecting the same file later
@@ -6254,7 +6278,7 @@ async function addFiles(list){
   for(const f of incoming){
     const hash=await sha256(f);
     if(FILES.some(e=>e.hash===hash)){ dupes.push(f.name); continue; }   // exact-content duplicate
-    FILES.push({file:f, name:f.name, size:f.size, hash}); added++;
+    FILES.push({file:f, name:f.name, size:f.size, hash, folder:f._tpFolder||null}); added++;
   }
   renderFiles();
   invalidateResults();
@@ -6270,7 +6294,7 @@ function renderFiles(){
   $("#intake").classList.toggle("has-files", has);
   if(!has){ el.innerHTML="No files loaded."; return; }
   el.innerHTML="<div class='files-head'><span class='files-count'>"+FILES.length+" techpack"+(FILES.length>1?"s":"")+" loaded</span><span class='files-hint'>click × to remove</span></div>"+
-    "<div class='chips'>"+FILES.map((e,i)=>"<span class='chip'><span class='chip-name'>"+esc(e.name.length>46?e.name.slice(0,46)+"…":e.name)+"</span><span class='chip-size'>"+fmtKB(e.size)+"</span><span class='rm' data-i='"+i+"' title='Remove this file'>×</span></span>").join("")+"</div>";
+    "<div class='chips'>"+FILES.map((e,i)=>"<span class='chip' title='"+esc((e.folder?e.folder+"/":"")+e.name)+"'>"+(e.folder?"<span class='chip-folder'>"+esc(e.folder.length>22?"…"+e.folder.slice(-22):e.folder)+"</span>":"")+"<span class='chip-name'>"+esc(e.name.length>46?e.name.slice(0,46)+"…":e.name)+"</span><span class='chip-size'>"+fmtKB(e.size)+"</span><span class='rm' data-i='"+i+"' title='Remove this file'>×</span></span>").join("")+"</div>";
   el.querySelectorAll(".rm").forEach(x=>x.addEventListener("click",()=>removeFile(+x.dataset.i)));
 }
 function removeFile(i){
@@ -6474,6 +6498,7 @@ function _sfcKey(d){ return _squash(sfcGuess(d.cover||{})); }
 function _dateTS(d){ const t=d&&d.cover&&d.cover.DateTS; return (typeof t==="number"&&!isNaN(t))?t:-Infinity; }
 function _dateLabel(d){ const r=d&&d.cover&&d.cover.DateRaw; return r?r.replace(/\s+at\s+.*$/i,""):""; }
 function _shortName(n){ n=String(n||""); return n.length>44?n.slice(0,44)+"\u2026":n; }
+function _labelFor(d){ const fo=d&&d._fileRef&&d._fileRef.folder; return (fo?fo+"/":"")+((d&&d.file)||""); }
 function currentTab(){ const t=$(".tab.active"); return t?t.dataset.t:"style"; }
 
 function detectDuplicates(){
@@ -6541,7 +6566,7 @@ function renderDupAlerts(){
   const n=dups.length;
   const rows=dups.map(({d,idx})=>{
     const exact=d._dup.kind==="full";
-    const partner=(d._dup.of&&d._dup.of.file)||"another file";
+    const partner=_labelFor(d._dup.of)||"another file";
     const kept=_docExtracted(d);
     const tag=exact
       ? "<span class='da-tag exact' title='Every extracted field matches another file'>Exact copy</span>"
@@ -6556,7 +6581,7 @@ function renderDupAlerts(){
       ? sfcTxt+((myDate||ofDate)?" \u00b7 this "+esc(myDate||"\u2014")+" \u00b7 copy "+esc(ofDate||"\u2014"):"")
       : sfcTxt+(myDate?" \u00b7 "+esc(myDate):"")+(ofDate?" \u2192 latest "+esc(ofDate):"");
     return "<div class='da-row'>"+tag+
-      "<div class='da-row-main'><code>"+esc(_shortName(d.file))+"</code><span class='da-rel'>"+(exact?"duplicate of":"superseded by")+"</span><code>"+esc(_shortName(partner))+"</code><span class='da-sfc'>"+dateBits+"</span></div>"+
+      "<div class='da-row-main'><code>"+esc(_shortName(_labelFor(d)))+"</code><span class='da-rel'>"+(exact?"duplicate of":"superseded by")+"</span><code>"+esc(_shortName(partner))+"</code><span class='da-sfc'>"+dateBits+"</span></div>"+
       state+
       "<div class='da-row-actions'>"+keepBtn+
         "<button class='btn danger' data-da='del' data-id='"+idx+"'><span class='ic'>"+_DA_ICO.trash+"</span>Delete file</button>"+
