@@ -5444,7 +5444,6 @@ $('exportBtn').addEventListener('click',function(){
   /* ---------- extraction ---------- */
   async function extract(){
     if(!window.__LIBS_READY || typeof pdfjsLib==='undefined'){ log('✕ PDF engine still loading — try again in a second.'); return; }
-    if(!window.XLSX){ log('✕ Excel engine still loading — try again in a second.'); return; }
     if(!files.length) return;
     resetLog(); ORDERS=[];
     $('jsb_results').style.display='none';
@@ -5515,56 +5514,52 @@ $('exportBtn').addEventListener('click',function(){
   /* ---------- export (SBD order-list layout, 64 columns A–BL) ---------- */
   var HEADERS=["REBOOK  STICKER CARTON","remark","Season","Order type","Buyer","Block","Item No./Style code","Model","Fabric","Fabric Content","Color","Des","Delivery","Order no./BPO","X-doc name","PO","Polybag sticker","Carton sticker","Total Full carton dimension L60-W40-H30","Total inner carton dimension L59-W39-H29","odd garment qty","Odd carton Q'ty\nL40 x W40 x H30 cm","Inner carton Q'ty\nL39 x W39 x H29 cm","Hangtag sticker","Total UCC sticker","REPLEN - red sticker","LAUNCH - blue sticker","CH - yellow sticker","Cardboard (carton cutting protection) dimension for Full carton(3 Ply) L50 x W30 CM","Cardboard (carton cutting protection) dimension for Odd carton(3 Fly) L30 x W30 CM","Article no.","Article no.","Article no. - Variant Code - X-doc","Model / style description","Price","Barcode","Sticker booking remark\nHTG/POLYBAG","Sticker booking remark\nCARTON","Care content ","Lining content","Panel","Care label remark","FOB","DIM/length","Size /waist","Order Qty","SIZE & Inseam","PO QTY","ERP qty","1st bulk","Bulk qty","TP CODE","GMT","SO BLK","MO BLK","SO 1st BLK","MO 1st BULK","Wash Type ","Supplier Mill","NoOfDays ","Product Type ","Payment Term","TypeOfOrder","remark"];
   var CI={E:4,G:6,K:10,L:11,M:12,N:13,O:14,P:15,AE:30,AF:31,AH:33,AQ:42,AR:43,AS:44,AU:46,AV:47};
-  function exportXlsx(){
+  var WIDTHS={}; WIDTHS[CI.E]=11; WIDTHS[CI.G]=17; WIDTHS[CI.K]=20; WIDTHS[CI.M]=10; WIDTHS[CI.N]=15; WIDTHS[CI.O]=9; WIDTHS[CI.P]=15;
+  WIDTHS[CI.AE]=17; WIDTHS[CI.AF]=28; WIDTHS[CI.AH]=28; WIDTHS[CI.AQ]=8; WIDTHS[CI.AU]=11; WIDTHS[CI.AV]=8;
+  async function exportXlsx(){
     var recs=[]; ORDERS.forEach(function(o){ if(o._recs) recs=recs.concat(o._recs); });
     if(!recs.length){ log('⚠ nothing to export — extract first'); return; }
-    var XLSX=window.XLSX;
-    var aoa=[HEADERS];
-    recs.forEach(function(r){
-      var row=new Array(HEADERS.length).fill('');
-      row[CI.E]='JUST BRAND';
-      row[CI.G]=r.style;
-      row[CI.K]=r.color;
-      row[CI.L]='NL';
-      row[CI.M]=r.delivery||'';
-      row[CI.N]=r.bpo;
-      row[CI.O]=r.xdoc;
-      row[CI.P]=r.bpo;
-      row[CI.AE]=r.style;
-      row[CI.AF]=r.model;
-      row[CI.AH]=r.model;
-      row[CI.AQ]=r.price!=null?r.price:'';
-      row[CI.AR]=r.len!=null?r.len:'';
-      row[CI.AS]=r.size;
-      row[CI.AU]=r.sizeInseam;
-      row[CI.AV]=r.qty;
-      aoa.push(row);
-    });
-    var ws=XLSX.utils.aoa_to_sheet(aoa, {cellDates:true});
-    for(var i=0;i<recs.length;i++){
-      var mAddr=XLSX.utils.encode_cell({r:i+1,c:CI.M});
-      if(ws[mAddr] && recs[i].delivery){ ws[mAddr].t='d'; ws[mAddr].z='dd-mm-yy'; }
-      var qAddr=XLSX.utils.encode_cell({r:i+1,c:CI.AQ});
-      if(ws[qAddr] && ws[qAddr].t==='n') ws[qAddr].z='0.00';
-    }
-    for(var c=0;c<HEADERS.length;c++){
-      var a=XLSX.utils.encode_cell({r:0,c:c});
-      if(ws[a]) ws[a].s={font:{bold:true,name:'Calibri',sz:10},alignment:{vertical:'top',wrapText:true}};
-    }
-    var W=function(n){ return {wch:n}; };
-    var cols=[]; for(var c2=0;c2<HEADERS.length;c2++) cols.push(W(9));
-    cols[CI.E]=W(11); cols[CI.G]=W(17); cols[CI.K]=W(20); cols[CI.M]=W(10); cols[CI.N]=W(15); cols[CI.O]=W(9); cols[CI.P]=W(15);
-    cols[CI.AE]=W(17); cols[CI.AF]=W(28); cols[CI.AH]=W(28); cols[CI.AQ]=W(8); cols[CI.AU]=W(11); cols[CI.AV]=W(8);
-    ws['!cols']=cols;
-    ws['!freeze']={xSplit:0,ySplit:1,topLeftCell:'A2',activePane:'bottomLeft',state:'frozen'};
-    var wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'SBD');
-    var ords=ORDERS.map(function(o){ return o.orderNo; });
-    var name='JUST BRANDS SBD - '+ords[0]+(ords.length>1?'-'+ords[ords.length-1].replace(/^OR/,''):'')+'.xlsx';
+    if(typeof ExcelJS==='undefined'){ log('✕ Excel engine still loading — try again in a second.'); return; }
+    var btn=$('jsb_exportBtn'); btn.disabled=true;
     try{
-      XLSX.writeFile(wb,name,{cellStyles:true,cellDates:true});
+      var wb=new ExcelJS.Workbook(); wb.creator='JustBrand SBD Extraction from PO';
+      var ws=wb.addWorksheet('SBD',{views:[{state:'frozen',ySplit:1}]});
+      ws.columns=HEADERS.map(function(h,i){ return {width:WIDTHS[i]||9}; });
+      var hdr=ws.addRow(HEADERS);
+      hdr.font={name:'Calibri',size:10,bold:true};
+      hdr.alignment={vertical:'top',wrapText:true};
+      recs.forEach(function(r){
+        var row=new Array(HEADERS.length).fill(null);
+        row[CI.E]='JUST BRAND';
+        row[CI.G]=r.style;
+        row[CI.K]=r.color;
+        row[CI.L]='NL';
+        row[CI.M]=r.delivery||null;
+        row[CI.N]=r.bpo;
+        row[CI.O]=r.xdoc;
+        row[CI.P]=r.bpo;
+        row[CI.AE]=r.style;
+        row[CI.AF]=r.model;
+        row[CI.AH]=r.model;
+        row[CI.AQ]=r.price!=null?r.price:null;
+        row[CI.AR]=r.len!=null?r.len:null;
+        row[CI.AS]=r.size;
+        row[CI.AU]=r.sizeInseam||null;
+        row[CI.AV]=r.qty;
+        var xr=ws.addRow(row);
+        xr.font={name:'Calibri',size:10};
+        if(r.delivery) xr.getCell(CI.M+1).numFmt='dd-mm-yy';
+        if(r.price!=null) xr.getCell(CI.AQ+1).numFmt='0.00';
+      });
+      var ords=ORDERS.map(function(o){ return o.orderNo; });
+      var name='JUST BRANDS SBD - '+ords[0]+(ords.length>1?'-'+ords[ords.length-1].replace(/^OR/,''):'')+'.xlsx';
+      var buf=await wb.xlsx.writeBuffer();
+      var url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+      var a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
+      setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },1500);
       log('✓ exported '+recs.length+' rows · '+name);
     }catch(e){ log('✕ export failed: '+((e&&e.message)||e)); }
+    btn.disabled=false;
   }
 
   /* ---------- wiring ---------- */
