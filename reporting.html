@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>After Wash Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" integrity="sha384-Pqp51FUN2/qzfxZxBCtF0stpc9ONI6MYZpVqmo8m20SoaQCzf+arZvACkLkirlPz" crossorigin="anonymous"></script>
+<style>
+  :root{
+    --pt-black:#111418;
+    --pt-dark-gray1:#1c2127; --pt-dark-gray2:#252a31; --pt-dark-gray3:#2f343c; --pt-dark-gray4:#383e47;
+    --pt-gray1:#5f6b7c; --pt-gray2:#738091; --pt-gray3:#8f99a8; --pt-gray4:#abb3bf; --pt-gray5:#c5cbd3;
+    --pt-light-gray1:#d3d8de; --pt-light-gray2:#dce0e5; --pt-light-gray3:#e5e8eb; --pt-light-gray4:#edeff2; --pt-light-gray5:#f6f7f9;
+    --pt-white:#fff;
+    --pt-blue1:#184a90; --pt-blue2:#215db0; --pt-blue3:#2d72d2; --pt-blue4:#4c90f0; --pt-blue5:#8abbff;
+    --pt-green1:#165a36; --pt-green2:#1c6e42; --pt-green3:#238551; --pt-green4:#32a467;
+    --pt-orange1:#77450d; --pt-orange2:#935610; --pt-orange3:#c87619; --pt-orange4:#ec9a3c;
+    --pt-red1:#8e292c; --pt-red2:#ac2f33; --pt-red3:#cd4246; --pt-red4:#e76a6e;
+    --ink:#f6f7f9; --ink-soft:#abb3bf;
+    --paper:#1c2127; --card:#252a31; --field:#2f343c; --elevated:#2f343c;
+    --line:var(--pt-divider); --line-strong:rgba(255,255,255,.22);
+    --primary:var(--pt-blue4);
+    --ok:var(--pt-green4); --okbg:rgba(50,164,103,.16);
+    --warn:var(--pt-orange4); --warnbg:rgba(236,154,60,.16);
+    --err:var(--pt-red4); --errbg:rgba(231,106,110,.16);
+    --ok-text:var(--pt-green4); --warn-text:var(--pt-orange4); --err-text:var(--pt-red4); --accent-text:var(--pt-blue5);
+    --hover:rgba(143,153,168,.16); --hover2:rgba(143,153,168,.3);
+    --pt-divider:rgba(255,255,255,.16); --divider-muted:rgba(255,255,255,.09);
+    --radius:6px; --radius-sm:4px; --radius-xs:2px; --radius-pill:9999px;
+    --elev0:0 0 0 1px rgba(255,255,255,.09);
+    --elev1:0 0 0 1px rgba(255,255,255,.1),0 2px 4px rgba(0,0,0,.4);
+    --elev-input:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 1px 1px rgba(0,0,0,.28);
+    --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --ease:cubic-bezier(.4,1,.75,.9); --dur:100ms;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; color-scheme:dark}
+  body{background:var(--paper); color:var(--ink); font-family:var(--font); font-size:14px; line-height:1.28581; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; text-rendering:optimizeLegibility}
+  .i16{width:16px;height:16px;display:inline-block;vertical-align:middle;flex:none;fill:currentColor}
+
+  /* ---- App shell + sidebar ---- */
+  .app-shell{display:flex; min-height:100vh}
+  .sidebar{width:248px; flex:none; background:var(--card); box-shadow:1px 0 0 var(--pt-divider); display:flex; flex-direction:column; position:sticky; top:0; height:100vh; z-index:5; transition:width var(--dur) var(--ease),opacity var(--dur) var(--ease)}
+  .sb-brand{display:flex; align-items:center; gap:10px; height:50px; padding:0 16px; border-bottom:1px solid var(--pt-divider); flex:none}
+  .sb-brand .mark{width:28px;height:28px;border-radius:var(--radius-sm);background:var(--pt-blue3);color:#fff;display:grid;place-items:center;box-shadow:var(--elev0)}
+  .sb-brand .mark .i16{width:15px;height:15px}
+  .sb-brand .bt{font-size:13px; font-weight:600; letter-spacing:-.005em; line-height:1.2; display:block}
+  .sb-brand .bs{font-size:10px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.07em; margin-top:1px; display:block}
+  .sb-home{display:flex; align-items:center; gap:10px; min-width:0; flex:1; text-decoration:none; color:inherit}
+  .sb-sec{padding:16px 14px 6px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft)}
+  .sb-menu{display:flex; flex-direction:column; gap:2px; padding:0 8px}
+  .sb-item{display:flex; align-items:center; gap:9px; padding:8px 10px; border-radius:var(--radius-sm); font-size:13px; color:var(--ink); cursor:pointer; border:none; background:none; text-align:left; font:inherit; width:100%}
+  .sb-item .i16{color:var(--pt-gray2)}
+  .sb-item:hover{background:var(--hover)}
+  .sb-item.active{background:rgba(45,114,210,.12); color:var(--accent-text); font-weight:500}
+  .sb-item.active .i16{color:var(--pt-blue3)}
+  .sb-item.muted{color:var(--ink-soft); cursor:default}
+  .sb-item.muted:hover{background:none}
+  .sb-item .cnt{margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--ink-soft)}
+  .sb-foot{margin-top:auto; padding:13px 16px; font-size:11px; line-height:1.4; color:var(--ink-soft); border-top:1px solid var(--pt-divider)}
+  .sb-collapse{margin-left:auto; flex:none; background:none; border:none; color:var(--pt-gray2); cursor:pointer; padding:4px; border-radius:var(--radius-xs); display:inline-flex}
+  .sb-collapse:hover{background:var(--hover); color:var(--ink)}
+  .sb-collapse .chev{transform:rotate(180deg)}
+  #sbOpen{position:fixed; left:10px; top:9px; z-index:30; display:none; align-items:center; justify-content:center; width:32px; height:32px; border:none; border-radius:var(--radius-sm); background:var(--card); color:var(--ink); box-shadow:var(--elev1); cursor:pointer}
+  #sbOpen:hover{background:var(--hover)}
+  #sbOpen .i16{width:17px;height:17px}
+  .app-shell.sb-collapsed .sidebar{width:0; min-width:0; overflow:hidden; box-shadow:none; opacity:0; pointer-events:none}
+  .app-shell.sb-collapsed #sbOpen{display:inline-flex}
+  .main{flex:1; min-width:0}
+  .wrap{max-width:1180px; margin:0 auto; padding:26px 24px 80px}
+
+  /* Header */
+  header.app{display:flex; align-items:center; gap:13px; padding-bottom:16px}
+  .mark{width:36px;height:36px;border-radius:var(--radius-sm); flex:none; display:grid; place-items:center; color:#fff; background:var(--pt-blue3); box-shadow:var(--elev0)}
+  .mark .i16{width:20px;height:20px}
+  .title h1{font-size:18px; margin:0; letter-spacing:-.005em; font-weight:600; color:var(--ink)}
+  .title p{margin:3px 0 0; color:var(--ink-soft); font-size:13px}
+  .sunrule{height:1px;border:0;margin:0 0 22px; background:var(--pt-divider)}
+
+  /* Steps */
+  .steps{display:grid; grid-template-columns:1fr; gap:16px}
+  .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--elev0); min-width:0}
+  .card .hd{display:flex; align-items:center; gap:11px; padding:14px 16px; border-bottom:1px solid var(--pt-divider)}
+  .num{width:22px;height:22px;border-radius:var(--radius-sm); flex:none; display:grid; place-items:center; font-size:12px; font-weight:600; font-family:var(--mono); color:var(--accent-text); background:rgba(45,114,210,.15)}
+  .hd h2{font-size:15px; margin:0; font-weight:600; letter-spacing:-.005em}
+  .hd .sub{color:var(--ink-soft); font-size:11px; margin-left:auto; text-transform:uppercase; letter-spacing:.06em; font-weight:600}
+  .bd{padding:16px}
+
+  /* Dropzone */
+  .drop{border:1.5px dashed var(--pt-gray2); border-radius:var(--radius); background:var(--elevated); padding:24px 18px; text-align:center; transition:border-color var(--dur) var(--ease),background var(--dur) var(--ease); cursor:pointer}
+  .drop:hover{border-color:var(--pt-gray4)}
+  .drop.drag{border-color:var(--pt-blue3); background:rgba(45,114,210,.07)}
+  .dropicon{display:block; margin:0 auto 8px; color:var(--pt-gray2)}
+  .dropicon .i16{width:24px;height:24px}
+  .drop strong{display:block; font-size:14px; font-weight:600}
+  .drop span{color:var(--ink-soft); font-size:12.5px}
+  .filelist{margin-top:14px; display:flex; flex-direction:column; gap:6px}
+  .frow{display:flex; align-items:center; gap:9px; font-size:12.5px; padding:7px 10px; background:var(--elevated); border-radius:var(--radius-sm); box-shadow:inset 0 0 0 1px var(--divider-muted)}
+  .frow > .i16{color:var(--pt-gray2)}
+  .frow .nm{font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 1 auto; min-width:0}
+  .frow .sz{color:var(--ink-soft); margin-left:auto; flex:none; font-family:var(--mono); font-size:11.5px}
+  .frow .x{flex:none; cursor:pointer; color:var(--pt-gray2); border:none; background:none; padding:2px; display:inline-flex; border-radius:var(--radius-xs)}
+  .frow .x:hover{color:var(--err); background:var(--hover)}
+
+  /* Buttons */
+  .btnrow{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; align-items:center}
+  button.act{font:inherit; font-weight:500; font-size:14px; height:32px; padding:0 14px; border-radius:var(--radius-sm); cursor:pointer; border:none; display:inline-flex; align-items:center; gap:7px; line-height:1; transition:background var(--dur) var(--ease),box-shadow var(--dur) var(--ease); white-space:nowrap}
+  button.primary{color:#fff; background:var(--pt-blue3)}
+  button.primary:hover{background:var(--pt-blue2)}
+  button.primary:active{background:var(--pt-blue1)}
+  button.ghost{background:transparent; box-shadow:inset 0 0 0 1px var(--line-strong); color:var(--ink)}
+  button.ghost:hover{background:var(--hover)}
+  button.act:disabled{opacity:.5; cursor:not-allowed; filter:none}
+  button.primary:disabled{background:rgba(143,153,168,.2); color:var(--pt-gray2); opacity:1}
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:9px}
+
+  /* Log */
+  .log{margin-top:14px; font-family:var(--mono); font-size:11.5px; background:var(--pt-dark-gray1); color:var(--pt-light-gray3); border-radius:var(--radius-sm); padding:11px 13px; max-height:170px; overflow:auto; white-space:pre-wrap; display:none}
+  .log .g{color:var(--pt-green4)}.log .y{color:var(--pt-orange4)}.log .r{color:var(--pt-red4)}
+
+  /* Tables */
+  .tablewrap{overflow:auto; border-radius:var(--radius); box-shadow:var(--elev0); max-height:70vh}
+  table{border-collapse:collapse; width:100%; font-size:12.5px}
+  th,td{padding:7px 10px; text-align:left; border-bottom:1px solid var(--pt-divider); vertical-align:middle; white-space:nowrap}
+  thead th{background:var(--elevated); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); position:sticky; top:0; white-space:nowrap; z-index:1}
+  tbody tr:hover{background:rgba(143,153,168,.08)}
+  td.n,th.n{text-align:right; font-variant-numeric:tabular-nums}
+  td.mono{font-family:var(--mono); font-size:12px}
+  td.rep{color:var(--pt-gray2)}
+  td.grp{font-weight:600}
+  tr.gs td{border-top:1px solid var(--line-strong)}
+  td.key{font-weight:600; background:rgba(236,154,60,.07)}
+  td.late{color:var(--err-text); font-weight:600} td.soon{color:var(--warn-text); font-weight:600} td.done{color:var(--ok-text); font-style:italic}
+  tr.sub td{background:rgba(76,144,240,.10); font-weight:600; color:var(--accent-text)}
+  tr.sub td.key{background:rgba(236,154,60,.18)}
+  tr.grand td{background:var(--pt-blue1); font-weight:700; color:#fff}
+  td.rem{max-width:460px; overflow:hidden; text-overflow:ellipsis; color:var(--ink-soft); font-size:12px}
+  .badge{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:500; padding:2px 8px; border-radius:var(--radius-xs)}
+  .b-ok{background:var(--okbg); color:var(--ok-text)} .b-warn{background:var(--warnbg); color:var(--warn-text)} .b-err{background:var(--errbg); color:var(--err-text)}
+  .pillrow{display:flex; gap:18px; flex-wrap:wrap; font-size:12px; color:var(--ink-soft); margin:2px 0 12px}
+  .pillrow b{color:var(--ink)}
+  .empty{color:var(--ink-soft); font-size:13px; padding:24px; text-align:center}
+  .note{font-size:12.5px; color:var(--ink-soft); margin-top:14px; padding:10px 12px; background:var(--hover); border-radius:var(--radius-sm); display:flex; gap:10px; line-height:1.45}
+  .note > .i16{color:var(--ink-soft); margin-top:1px}
+  .note b{color:var(--ink); font-weight:600}
+
+  /* Tabs */
+  .tabs{display:flex; gap:2px; border-bottom:1px solid var(--pt-divider); margin-bottom:14px; flex-wrap:wrap}
+  .tab{font:inherit; font-size:13px; font-weight:500; color:var(--ink-soft); background:none; border:none; padding:9px 12px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; display:inline-flex; align-items:center; gap:7px}
+  .tab:hover{color:var(--ink)}
+  .tab.active{color:var(--accent-text); border-bottom-color:var(--pt-blue4)}
+  .tab .cnt{font-family:var(--mono); font-size:11px; background:var(--hover); color:var(--ink-soft); padding:1px 6px; border-radius:var(--radius-xs)}
+  .tab.active .cnt{background:rgba(45,114,210,.2); color:var(--accent-text)}
+  .pane{display:none} .pane.active{display:block}
+  .toolbar{display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap}
+  .toolbar input{font:inherit; font-size:13px; border:none; background:var(--field); color:var(--ink); border-radius:var(--radius-sm); padding:7px 10px; width:260px; box-shadow:var(--elev-input)}
+  .toolbar input:focus{outline:none; box-shadow:var(--elev-input),0 0 0 2px rgba(45,114,210,.35)}
+  .toolbar .cnt{font-size:12px; color:var(--ink-soft); font-variant-numeric:tabular-nums}
+  .sheetname{font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); display:inline-flex; align-items:center; gap:6px}
+  .sheetname .i16{width:13px;height:13px}
+
+  /* Dashboard */
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:16px}
+  .kpi{background:var(--elevated); border-radius:var(--radius); padding:12px 14px; box-shadow:inset 0 0 0 1px var(--divider-muted); min-width:0}
+  .kpi .l{font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-soft); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .kpi .v{font-size:22px; font-weight:600; margin-top:5px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; font-family:var(--mono)}
+  .kpi .s{font-size:11.5px; color:var(--ink-soft); margin-top:3px}
+  .kpi.warn .v{color:var(--warn-text)} .kpi.err .v{color:var(--err-text)} .kpi.ok .v{color:var(--ok-text)}
+  .dgrid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px}
+  @media(max-width:860px){ .dgrid{grid-template-columns:1fr} }
+  .dsec{background:var(--elevated); border-radius:var(--radius); box-shadow:inset 0 0 0 1px var(--divider-muted); min-width:0; overflow:hidden}
+  .dsec .dh{display:flex; align-items:center; gap:8px; padding:10px 13px; border-bottom:1px solid var(--pt-divider); font-size:12px; font-weight:600}
+  .dsec .dh .src{margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); font-weight:400}
+  .dsec .tablewrap{box-shadow:none; border-radius:0; max-height:360px}
+  .dsec table{font-size:12px}
+  .dsec th,.dsec td{padding:6px 10px}
+  .dsec thead th{background:var(--card)}
+  .dsec.full{grid-column:1 / -1}
+  .chart{padding:12px 13px 8px}
+  .chart svg{width:100%; height:auto; display:block}
+  .chart .lg{display:flex; gap:14px; font-size:11.5px; color:var(--ink-soft); margin-top:6px}
+  .chart .lg i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px}
+  .bar{display:inline-block; height:8px; border-radius:2px; background:var(--pt-blue4); vertical-align:middle; margin-right:6px}
+  @media(max-width:560px){ .hd .sub{display:none} .wrap{padding:20px 14px 70px} }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <button id="sbOpen" type="button" title="Show sidebar" aria-label="Show sidebar"><svg class="i16" viewBox="0 0 16 16"><path d="M1 3h14v2H1zM1 7h14v2H1zM1 11h14v2H1z"></path></svg></button>
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <a class="sb-home" href="index.html" title="Back to Ultimate Internal Tool home">
+        <span class="mark" aria-hidden="true"><svg class="i16" viewBox="0 0 16 16"><path d="M9 0H3c-.55 0-1 .45-1 1v14c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V5zm3 14H4V2h4v4h4z"></path></svg></span>
+        <span style="min-width:0"><span class="bt">After Wash Report</span><span class="bs">Printing · EMB · Report</span></span>
+      </a>
+      <button class="sb-collapse" id="sbToggle" type="button" title="Collapse sidebar" aria-label="Collapse sidebar"><svg class="i16 chev" viewBox="0 0 16 16"><path d="m10.71 7.29-4-4a1.003 1.003 0 0 0-1.42 1.42L8.59 8 5.3 11.29c-.19.18-.3.43-.3.71a1.003 1.003 0 0 0 1.71.71l4-4c.18-.18.29-.43.29-.71s-.11-.53-.29-.71"></path></svg></button>
+    </div>
+    <div class="sb-sec">Tools</div>
+    <div class="sb-menu">
+      <button class="sb-item active" type="button" title="After wash report"><svg class="i16" viewBox="0 0 16 16"><path d="M15 1H1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h14c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1M5 13H2v-2h3zm0-3H2V8h3zm0-3H2V5h3zm4 6H6v-2h3zm0-3H6V8h3zm0-3H6V5h3zm5 6h-3v-2h3zm0-3h-3V8h3zm0-3h-3V5h3z"></path></svg>Printing/EMB after wash plan</button>
+    </div>
+    <div class="sb-sec">Output sheets</div>
+    <div class="sb-menu" id="sbSheets">
+      <div class="sb-item muted" data-sheet="dash"><svg class="i16" viewBox="0 0 16 16"><path d="M15 1H1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h14c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1M5 13H2v-2h3zm0-3H2V8h3zm0-3H2V5h3zm4 6H6v-2h3zm0-3H6V8h3zm0-3H6V5h3zm5 6h-3v-2h3zm0-3h-3V8h3zm0-3h-3V5h3z"></path></svg>Dashboard<span class="cnt"></span></div>
+      <div class="sb-item muted" data-sheet="plan"><svg class="i16" viewBox="0 0 16 16"><path d="M15 1H1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h14c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1M5 13H2v-2h3zm0-3H2V8h3zm0-3H2V5h3zm4 6H6v-2h3zm0-3H6V8h3zm0-3H6V5h3zm5 6h-3v-2h3zm0-3h-3V8h3zm0-3h-3V5h3z"></path></svg>Plan<span class="cnt"></span></div>
+      <div class="sb-item muted" data-sheet="st6"><svg class="i16" viewBox="0 0 16 16"><path d="M15 1H1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h14c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1M5 13H2v-2h3zm0-3H2V8h3zm0-3H2V5h3zm4 6H6v-2h3zm0-3H6V8h3zm0-3H6V5h3zm5 6h-3v-2h3zm0-3h-3V8h3zm0-3h-3V5h3z"></path></svg>Printing ST6<span class="cnt"></span></div>
+      <div class="sb-item muted" data-sheet="rep"><svg class="i16" viewBox="0 0 16 16"><path d="M15 1H1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h14c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1M5 13H2v-2h3zm0-3H2V8h3zm0-3H2V5h3zm4 6H6v-2h3zm0-3H6V8h3zm0-3H6V5h3zm5 6h-3v-2h3zm0-3h-3V8h3zm0-3h-3V5h3z"></path></svg>Repair Stitch<span class="cnt"></span></div>
+    </div>
+    <div class="sb-foot">Runs entirely in your browser. The workbook never leaves this computer.</div>
+  </aside>
+
+  <main class="main">
+  <div class="wrap">
+    <header class="app">
+      <div class="mark" aria-hidden="true"><svg class="i16" viewBox="0 0 16 16"><path d="M9 0H3c-.55 0-1 .45-1 1v14c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V5zm3 14H4V2h4v4h4z"></path></svg></div>
+      <div class="title">
+        <h1>After Wash Report</h1>
+        <p>Drop the workbook that holds the <b>DETAIL</b> sheet. It builds the Plan, Printing ST6 and Repair Stitch sheets plus a live Dashboard, ready to export.</p>
+      </div>
+    </header>
+    <hr class="sunrule">
+
+    <div class="steps">
+      <!-- STEP 1 -->
+      <section class="card">
+        <div class="hd"><span class="num">1</span><h2>Add workbook</h2><span class="sub">.xlsx / .xlsm · needs a DETAIL sheet</span></div>
+        <div class="bd">
+          <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose or drop the workbook">
+            <span class="dropicon"><svg class="i16" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8m3 8c-.28 0-.53-.11-.71-.29L9 6.41V12c0 .55-.45 1-1 1s-1-.45-1-1V6.41l-1.29 1.3a1.003 1.003 0 0 1-1.42-1.42l3-3C7.47 3.11 7.72 3 8 3s.53.11.71.29l3 3A1.003 1.003 0 0 1 11 8"></path></svg></span>
+            <strong>Drop the after-wash plan workbook here</strong>
+            <span>or click to choose a file</span>
+          </div>
+          <input type="file" id="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+          <div class="filelist" id="filelist"></div>
+          <div class="hint">Only the DETAIL sheet is read. Columns are matched by header name, so their order does not matter.</div>
+        </div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section class="card">
+        <div class="hd"><span class="num">2</span><h2>Build plan &amp; preview</h2><span class="sub">Groups DETAIL the same way as the pivots</span></div>
+        <div class="bd">
+          <div class="btnrow">
+            <button class="act primary" id="buildBtn" disabled>Build plan</button>
+            <button class="act ghost" id="clearBtn" disabled>Clear</button>
+          </div>
+          <div class="log" id="log"></div>
+          <div id="result" style="margin-top:18px"></div>
+        </div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section class="card">
+        <div class="hd"><span class="num">3</span><h2>Export Excel</h2><span class="sub">Dashboard + Plan + Printing ST6 + Repair Stitch</span></div>
+        <div class="bd">
+          <div class="btnrow">
+            <button class="act primary" id="exportBtn" disabled>Export Excel (.xlsx)</button>
+            <span class="hint" id="exportname" style="margin:0"></span>
+          </div>
+          <div class="hint">The Dashboard sheet is built from formulas that point at the other three sheets, so it stays correct if quantities are edited in Excel.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+  </main>
+</div>
+
+<script>
+/*CORE-START*/
+const AWP = (function(){
+  'use strict';
+  // ---------- helpers ----------
+  const norm = s => String(s == null ? '' : s).trim().replace(/\s+/g,' ').toLowerCase();
+  const num = v => { if (v == null || v === '') return 0; const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/,/g,'')); return isFinite(n) ? n : 0; };
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DAY = 86400000;
+  const EPOCH = Date.UTC(1899,11,30);
+  // Every date is a UTC-midnight Date so ExcelJS writes the same calendar day regardless of time zone.
+  function utcDay(y,m,d){ return new Date(Date.UTC(y,m,d)); }
+  function toDate(v){
+    if (v == null || v === '') return null;
+    if (v instanceof Date) return isNaN(v) ? null : utcDay(v.getFullYear(), v.getMonth(), v.getDate());
+    if (typeof v === 'number') { if (v < 20000 || v > 80000) return null; return new Date(EPOCH + Math.round(v) * DAY); }
+    if (typeof v === 'string') {
+      const s = v.trim();
+      let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+      if (m) { let y = +m[3]; if (y < 100) y += 2000; return utcDay(y, +m[2]-1, +m[1]); }
+      m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return utcDay(+m[1], +m[2]-1, +m[3]);
+      return null;
+    }
+    return null;
+  }
+  const fmtDate = d => d instanceof Date ? `${d.getUTCDate()}-${MON[d.getUTCMonth()]}` : (d == null ? '' : String(d));
+  const fmtDateLong = d => d instanceof Date ? `${d.getUTCDate()}-${MON[d.getUTCMonth()]}-${d.getUTCFullYear()}` : '';
+  const fmtNum = n => (n == null || n === '') ? '' : Number(n).toLocaleString('en-US');
+  const cmpStr = (a,b) => String(a).localeCompare(String(b), undefined, {numeric:true, sensitivity:'base'});
+
+  // ---------- column map (normalized header -> field) ----------
+  const COLS = {
+    customer:'customer', emb:'printing/emb', loc:'location', proc:'process after wash', repair:'repair stitch',
+    cusdel:'cus del', fidate:'fi date', ho:'ho date', month:'month', plm:'plm code', spo:'saitex po', style:'style no',
+    cpo:'cust po', ptype:'product type for wash', fabric:'fabric name', wash:'wash name', season:'season',
+    planned:'planned qty', send:'wash send', closure:'washing closure date', finout:'fin out', balfin:'balance finish',
+    pack:'packing qty', balpack:'balance to pack'
+  };
+  const REQUIRED = ['customer','emb','loc','plm','planned','balfin'];
+
+  // ---------- read DETAIL ----------
+  function readDetail(buf, log){
+    log = log || (()=>{});
+    const wb = XLSX.read(buf, {type:'array', cellDates:false, cellNF:false});
+    const sname = wb.SheetNames.find(n => norm(n) === 'detail') || wb.SheetNames.find(n => norm(n).includes('detail'));
+    if (!sname) throw new Error('No sheet named "DETAIL" found. Sheets: ' + wb.SheetNames.join(', '));
+    const ws = wb.Sheets[sname];
+    const aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null, blankrows:false});
+    let hi = -1;
+    for (let i = 0; i < Math.min(15, aoa.length); i++) {
+      const ns = aoa[i].map(norm);
+      if (ns.includes(COLS.plm) && ns.includes(COLS.customer)) { hi = i; break; }
+    }
+    if (hi < 0) throw new Error('Could not find the header row in "' + sname + '" (needs "PLM code" and "Customer").');
+    const idx = {};
+    aoa[hi].forEach((h, i) => { const n = norm(h); for (const k in COLS) if (COLS[k] === n && idx[k] == null) idx[k] = i; });
+    const missing = REQUIRED.filter(k => idx[k] == null);
+    if (missing.length) throw new Error('DETAIL is missing columns: ' + missing.map(k => COLS[k]).join(', '));
+    let reportDate = null;
+    for (let i = 0; i < hi && !reportDate; i++) for (const v of aoa[i]) { const d = toDate(v); if (d) { reportDate = d; break; } }
+    if (!reportDate) { const t = new Date(); reportDate = utcDay(t.getFullYear(), t.getMonth(), t.getDate()); log('No report date found above the header, using today', 'y'); }
+    const recs = [];
+    let skipped = 0;
+    for (let i = hi + 1; i < aoa.length; i++) {
+      const r = aoa[i];
+      const get = k => idx[k] == null ? null : r[idx[k]];
+      const customer = get('customer'), plm = get('plm');
+      if (customer == null || String(customer).trim() === '' || plm == null || String(plm).trim() === '') { skipped++; continue; }
+      const str = k => { const v = get(k); return v == null ? '' : String(v).trim(); };
+      const ho = toDate(get('ho'));
+      let monthKey, month;
+      if (ho) { monthKey = ho.getUTCFullYear()*12 + ho.getUTCMonth(); month = MON[ho.getUTCMonth()]; }
+      else { month = str('month').slice(0,3); const mi = MON.findIndex(m => m.toLowerCase() === month.toLowerCase()); month = mi >= 0 ? MON[mi] : (month || '?'); monthKey = mi >= 0 ? reportDate.getUTCFullYear()*12 + mi : 9e9; }
+      const closureRaw = get('closure');
+      const closure = toDate(closureRaw) || (closureRaw == null || closureRaw === '' ? null : String(closureRaw).trim());
+      recs.push({
+        customer: str('customer'), emb: str('emb'), loc: str('loc'), proc: str('proc'), repair: str('repair'),
+        plm: str('plm'), style: str('style'), wash: str('wash'), ptype: str('ptype'), season: str('season'),
+        spo: str('spo'), cpo: str('cpo'), ho, month, monthKey,
+        planned: num(get('planned')), send: num(get('send')), closure,
+        balfin: idx.balfin != null ? num(get('balfin')) : num(get('planned')) - num(get('finout')),
+        balpack: idx.balpack != null ? num(get('balpack')) : num(get('planned')) - num(get('pack'))
+      });
+    }
+    log(`Read "${sname}": ${recs.length} PO lines (${skipped} blank/partial rows skipped)`, 'g');
+    return { sheet: sname, headers: aoa[hi], reportDate, recs, sheetNames: wb.SheetNames };
+  }
+
+  // ---------- grouping ----------
+  function aggregate(rows){
+    let planned = 0, send = 0, balfin = 0, balpack = 0, maxDate = null; const texts = new Set();
+    for (const r of rows) { planned += r.planned; send += r.send; balfin += r.balfin; balpack += r.balpack;
+      if (r.closure instanceof Date) { if (!maxDate || r.closure > maxDate) maxDate = r.closure; } else if (r.closure) texts.add(r.closure); }
+    const closure = maxDate || (texts.size ? [...texts].join(' / ') : null);
+    return { planned, send, balfin, balpack, closure, n: rows.length };
+  }
+  function groupBy(recs, keys){
+    const map = new Map();
+    for (const r of recs) { const k = keys.map(f => r[f]).join(''); let g = map.get(k); if (!g) { g = {}; keys.forEach(f => g[f] = r[f]); g.rows = []; map.set(k, g); } g.rows.push(r); }
+    const out = [];
+    for (const g of map.values()) { Object.assign(g, aggregate(g.rows)); g.monthKey = Math.min(...g.rows.map(r => r.monthKey)); g.procs = [...new Set(g.rows.map(r => r.proc).filter(Boolean))].join(' / '); out.push(g); }
+    return out;
+  }
+  // "biggest balance first" ordering for a level within its parent
+  function weightMap(groups, parentKeys, key){
+    const m = new Map();
+    for (const g of groups) { const k = parentKeys.concat(key).map(f => g[f]).join(''); m.set(k, (m.get(k) || 0) + g.balfin); }
+    return (g) => m.get(parentKeys.concat(key).map(f => g[f]).join('')) || 0;
+  }
+
+  function buildPlanRows(recs){
+    const keys = ['loc','emb','month','customer','style','plm','wash','proc'];
+    const gs = groupBy(recs, keys);
+    const wEmb = weightMap(gs, ['loc'], 'emb'), wCust = weightMap(gs, ['loc','emb','month'], 'customer');
+    gs.sort((a,b) => cmpStr(a.loc,b.loc) || (wEmb(b)-wEmb(a)) || cmpStr(a.emb,b.emb) || (a.monthKey-b.monthKey) || (wCust(b)-wCust(a)) || cmpStr(a.customer,b.customer) || cmpStr(a.style,b.style) || cmpStr(a.plm,b.plm) || cmpStr(a.wash,b.wash) || cmpStr(a.proc,b.proc));
+    return gs;
+  }
+  function buildSt6Rows(recs){
+    const sub = recs.filter(r => norm(r.emb) === 'printing' && norm(r.loc) === 'st6');
+    const gs = groupBy(sub, ['emb','loc','month','customer','style','wash','plm','ptype']);
+    const wCust = weightMap(gs, ['month'], 'customer');
+    gs.sort((a,b) => (a.monthKey-b.monthKey) || (wCust(b)-wCust(a)) || cmpStr(a.customer,b.customer) || cmpStr(a.style,b.style) || cmpStr(a.wash,b.wash) || cmpStr(a.plm,b.plm));
+    return gs;
+  }
+  function buildRepairRows(recs){
+    const sub = recs.filter(r => norm(r.repair) === 'repair stitch');
+    const gs = groupBy(sub, ['repair','customer','style','plm']);
+    const wCust = weightMap(gs, [], 'customer');
+    gs.sort((a,b) => (wCust(b)-wCust(a)) || cmpStr(a.customer,b.customer) || cmpStr(a.style,b.style) || cmpStr(a.plm,b.plm));
+    return gs;
+  }
+
+  // ---------- sheet models: arrays of {type:'data'|'sub'|'grand', cells:[...], firsts:{col:bool}} ----------
+  const PLAN_COLS = [
+    {k:'loc', h:'LOCATION', w:10}, {k:'emb', h:'PRINTING/EMB', w:15}, {k:'month', h:'MONTH', w:8}, {k:'customer', h:'Customer', w:18},
+    {k:'style', h:'style no', w:22}, {k:'plm', h:'PLM code', w:13}, {k:'wash', h:'WASH NAME', w:28},
+    {k:'planned', h:'Planned Qty', w:12, t:'n'}, {k:'send', h:'WASH SEND', w:12, t:'n'}, {k:'closure', h:'WASHING CLOSURE DATE', w:15, t:'d'},
+    {k:'balfin', h:'balance finishing', w:14, t:'n'}, {k:'proc', h:'REMARK', w:48, t:'w'}
+  ];
+  const ST6_COLS = [
+    {k:'emb', h:'PRINTING/EMB', w:13}, {k:'loc', h:'LOCATION', w:11}, {k:'month', h:'MONTH', w:8}, {k:'customer', h:'Customer', w:18},
+    {k:'style', h:'style no', w:20}, {k:'wash', h:'WASH NAME', w:24}, {k:'plm', h:'PLM code', w:13}, {k:'ptype', h:'PRODUCT TYPE FOR WASH', w:12},
+    {k:'planned', h:'Planned Qty', w:12, t:'n'}, {k:'send', h:'WASH SEND', w:12, t:'n'}, {k:'closure', h:'WASHING CLOSURE DATE', w:15, t:'d'},
+    {k:'balfin', h:'balance finishing', w:14, t:'n'}, {k:'procs', h:'REMARK', w:40, t:'w'}
+  ];
+  const REP_COLS = [
+    {k:'repair', h:'Repair Stitch', w:14}, {k:'customer', h:'Customer', w:20}, {k:'style', h:'style no', w:24}, {k:'plm', h:'PLM code', w:14},
+    {k:'planned', h:'Planned Qty', w:12, t:'n'}, {k:'send', h:'WASH SEND', w:12, t:'n'}, {k:'closure', h:'WASHING CLOSURE DATE', w:15, t:'d'},
+    {k:'balfin', h:'Balance finish', w:14, t:'n'}, {k:'balpack', h:'Balance to pack', w:14, t:'n'}
+  ];
+  const GROUP_LEVELS = { plan: ['loc','emb','month','customer','style','plm','wash'], st6: ['emb','loc','month','customer','style','wash','plm'], rep: ['repair','customer','style','plm'] };
+
+  function totalsRow(label, labelCol, cols, rows, type){
+    const a = aggregate(rows.flatMap(g => g.rows));
+    const cells = cols.map(c => c.k === labelCol ? label : (['planned','send','balfin','balpack'].includes(c.k) ? a[c.k] : (c.k === 'closure' ? a.closure : null)));
+    return { type, cells, firsts:{} };
+  }
+  function toSheetRows(groups, cols, levels, subBy, subLabelCol){
+    const out = []; let prev = null; let block = [];
+    const flush = () => { if (subBy && block.length) { out.push(totalsRow(`${prev[subBy]} Total`, subLabelCol || subBy, cols, block, 'sub')); block = []; } };
+    for (const g of groups) {
+      const newBlock = subBy && prev && prev[subBy] !== g[subBy];
+      if (newBlock) flush();
+      const firsts = {}; let changed = !prev || newBlock;
+      for (const lv of levels) { if (!changed && prev[lv] !== g[lv]) changed = true; firsts[lv] = changed; }
+      out.push({ type:'data', g, cells: cols.map(c => g[c.k] == null ? null : g[c.k]), firsts });
+      block.push(g); prev = g;
+    }
+    flush();
+    out.push(totalsRow('Grand Total', cols[0].k, cols, groups, 'grand'));
+    return out;
+  }
+
+  // ---------- dashboard model (built ONLY from the three sheet models) ----------
+  function buildDashboard(model){
+    const { reportDate } = model;
+    const planData = model.plan.rows.filter(r => r.type === 'data').map(r => r.g);
+    const st6Data = model.st6.rows.filter(r => r.type === 'data').map(r => r.g);
+    const repData = model.rep.rows.filter(r => r.type === 'data').map(r => r.g);
+    const grand = (m) => m.rows[m.rows.length-1].cells;
+    const pg = grand(model.plan), sg = grand(model.st6), rg = grand(model.rep);
+    const idx = (cols, k) => cols.findIndex(c => c.k === k);
+    const months = [...new Map(planData.map(g => [g.month, g.monthKey])).entries()].sort((a,b) => a[1]-b[1]).map(e => e[0]);
+    const locs = [...new Set(planData.map(g => g.loc))].sort(cmpStr);
+    const sum = (arr, f) => arr.reduce((s,g) => s + (g[f] || 0), 0);
+    const wk = new Date(reportDate.getTime() + 7*DAY);
+    const overdue = planData.filter(g => g.closure instanceof Date && g.closure < reportDate && g.balfin > 0);
+    const due7 = planData.filter(g => g.closure instanceof Date && g.closure >= reportDate && g.closure <= wk && g.balfin > 0);
+    const completed = planData.filter(g => !(g.closure instanceof Date) && g.closure);
+    const kpi = {
+      planned: pg[idx(PLAN_COLS,'planned')], send: pg[idx(PLAN_COLS,'send')], balfin: pg[idx(PLAN_COLS,'balfin')], lines: planData.length,
+      st6bal: sg[idx(ST6_COLS,'balfin')], st6lines: st6Data.length, repbal: rg[idx(REP_COLS,'balfin')], replines: repData.length,
+      overdueN: overdue.length, overdueQ: sum(overdue,'balfin'), due7N: due7.length, due7Q: sum(due7,'balfin'), completedN: completed.length
+    };
+    const locMonth = locs.map(l => ({ loc:l, cells: months.map(m => sum(planData.filter(g => g.loc === l && g.month === m), 'balfin')), total: sum(planData.filter(g => g.loc === l), 'balfin') }));
+    const procOrder = []; const seen = new Set();
+    for (const g of planData) { const k = g.loc + '' + g.emb; if (!seen.has(k)) { seen.add(k); procOrder.push({loc:g.loc, emb:g.emb}); } }
+    const procMatrix = procOrder.map(p => ({ ...p, cells: months.map(m => sum(planData.filter(g => g.loc === p.loc && g.emb === p.emb && g.month === m), 'balfin')), total: sum(planData.filter(g => g.loc === p.loc && g.emb === p.emb), 'balfin') }));
+    const custs = [...new Set(planData.map(g => g.customer))];
+    const byCust = custs.map(c => { const rs = planData.filter(g => g.customer === c); return { customer:c, lines: rs.length, planned: sum(rs,'planned'), send: sum(rs,'send'), balfin: sum(rs,'balfin') }; }).sort((a,b) => b.balfin - a.balfin);
+    const st6Months = [...new Map(st6Data.map(g => [g.month, g.monthKey])).entries()].sort((a,b) => a[1]-b[1]).map(e => e[0]);
+    const st6ByMonth = st6Months.map(m => { const rs = st6Data.filter(g => g.month === m); return { month:m, lines: rs.length, planned: sum(rs,'planned'), send: sum(rs,'send'), balfin: sum(rs,'balfin') }; });
+    const repCusts = [...new Set(repData.map(g => g.customer))];
+    const repByCust = repCusts.map(c => { const rs = repData.filter(g => g.customer === c); return { customer:c, lines: rs.length, planned: sum(rs,'planned'), balfin: sum(rs,'balfin'), balpack: sum(rs,'balpack') }; });
+    const attention = planData.filter(g => g.closure instanceof Date && g.closure <= wk && g.balfin > 0).sort((a,b) => a.closure - b.closure).slice(0, 40);
+    return { months, locs, kpi, locMonth, procMatrix, byCust, st6ByMonth, repByCust, attention };
+  }
+
+  function build(detail, log){
+    log = log || (()=>{});
+    const planG = buildPlanRows(detail.recs), st6G = buildSt6Rows(detail.recs), repG = buildRepairRows(detail.recs);
+    const model = {
+      reportDate: detail.reportDate, source: detail.sheet, nDetail: detail.recs.length,
+      plan: { name:'Plan', title:'PRINTING/EMB After Wash', cols: PLAN_COLS, levels: GROUP_LEVELS.plan, band:'month', rows: toSheetRows(planG, PLAN_COLS, GROUP_LEVELS.plan, 'loc', 'loc') },
+      st6:  { name:'Printing ST6', title:'PRINTING ST6', cols: ST6_COLS, levels: GROUP_LEVELS.st6, band:'month', rows: toSheetRows(st6G, ST6_COLS, GROUP_LEVELS.st6, null) },
+      rep:  { name:'Repair Stitch', title:'REPAIR STITCH', cols: REP_COLS, levels: GROUP_LEVELS.rep, band:'customer', rows: toSheetRows(repG, REP_COLS, GROUP_LEVELS.rep, 'customer', 'customer') }
+    };
+    model.dash = buildDashboard(model);
+    log(`Plan: ${planG.length} lines / Printing ST6: ${st6G.length} lines / Repair Stitch: ${repG.length} lines`, 'g');
+    log(`Balance finish ${fmtNum(model.dash.kpi.balfin)} pcs / overdue ${model.dash.kpi.overdueN} lines / due in 7 days ${model.dash.kpi.due7N} lines`);
+    return model;
+  }
+
+  // ---------- Excel export ----------
+  const F_HEAD = 'FFDDEBF7', F_SUB = 'FFFCE4D6', F_GRAND = 'FFDDEBF7', F_REP_SUB = 'FFCCFFFF', F_KPI = 'FFF2F2F2', F_SEC = 'FF1F4E78';
+  const thin = { style:'thin', color:{argb:'FFBFBFBF'} };
+  const BORDER = { top:thin, left:thin, bottom:thin, right:thin };
+  const colL = n => { let s = ''; while (n > 0) { const m = (n-1) % 26; s = String.fromCharCode(65+m) + s; n = (n-m-1)/26; } return s; };
+
+  // sheet theme: navy header band, hairline rows, muted repeated labels, amber key column, navy grand total
+  const T = { navy:'FF1F4E78', white:'FFFFFFFF', ink:'FF1F2933', muted:'FFA6A6A6', line:'FFD9D9D9', lineDark:'FF8EA9C1',
+              sub:'FFDDEBF7', key:'FFFFF2CC', keySub:'FFFFE699', band:'FFF7F9FC', ok:'FF548235', overdue:'FFC00000', due:'FFC65911' };
+  const hair = { style:'hair', color:{argb:T.line} }, thinDark = { style:'thin', color:{argb:T.lineDark} }, thinNavy = { style:'thin', color:{argb:T.navy} }, medNavy = { style:'medium', color:{argb:T.navy} };
+  const NUM_FMT = '#,##0;-#,##0;"-"';
+  function layout(m){
+    // row extents used by the Dashboard formulas: title rows 1-2, header on row 3, data from row 4, grand total last
+    const firstData = 4, grandRow = 3 + m.rows.length;
+    m.xl = { firstData, lastData: grandRow - 1, grandRow, headerRow: 3, col: k => colL(m.cols.findIndex(c => c.k === k) + 1) };
+    return m;
+  }
+  function writeSheet(wb, m, reportDate){
+    layout(m);
+    const nC = m.cols.length, lastCol = colL(nC);
+    const ws = wb.addWorksheet(m.name, { views:[{ state:'frozen', ySplit:3, showGridLines:false }], properties:{ defaultRowHeight:17 } });
+    ws.columns = m.cols.map(c => ({ width: c.w }));
+    const dataCount = m.rows.filter(r => r.type === 'data').length;
+    const grand = m.rows[m.rows.length - 1].cells;
+    const balIdx = m.cols.findIndex(c => c.k === 'balfin');
+    // title block
+    ws.mergeCells(1, 1, 1, nC - 2);
+    const t = ws.getCell('A1'); t.value = m.title.toUpperCase(); t.font = { bold:true, size:16, color:{argb:T.navy} }; t.alignment = { vertical:'middle' };
+    const dl = ws.getCell(1, nC - 1); dl.value = 'Report date'; dl.font = { size:9, color:{argb:T.muted} }; dl.alignment = { horizontal:'right', vertical:'middle' };
+    const dc = ws.getCell(1, nC); dc.value = reportDate; dc.numFmt = 'd-mmm-yyyy'; dc.font = { bold:true, size:11, color:{argb:T.navy} }; dc.alignment = { horizontal:'right', vertical:'middle' };
+    ws.getRow(1).height = 26;
+    ws.mergeCells(2, 1, 2, nC);
+    const st = ws.getCell('A2'); st.value = `${dataCount} PO lines  |  planned ${fmtNum(grand[m.cols.findIndex(c => c.k === 'planned')])}  |  balance finish ${fmtNum(grand[balIdx])}  |  generated from DETAIL`;
+    st.font = { size:9, italic:true, color:{argb:T.muted} }; st.alignment = { vertical:'middle' };
+    ws.getRow(2).height = 16;
+    // header
+    const hr = ws.getRow(m.xl.headerRow);
+    m.cols.forEach((c, i) => { const cell = hr.getCell(i+1); cell.value = c.h.toUpperCase(); cell.font = { bold:true, size:9, color:{argb:T.white} }; cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:T.navy} }; cell.alignment = { wrapText:true, vertical:'middle', horizontal: c.t === 'n' || c.t === 'd' ? 'center' : 'left' }; cell.border = { bottom: medNavy }; });
+    hr.height = 32;
+    // body
+    let r = m.xl.firstData;
+    for (const row of m.rows) {
+      const xr = ws.getRow(r);
+      const groupStart = row.type === 'data' && row.firsts[m.band];
+      row.cells.forEach((v, i) => {
+        const c = m.cols[i]; const cell = xr.getCell(i+1);
+        cell.value = v == null ? null : v;
+        cell.alignment = { vertical:'middle', horizontal: c.t === 'n' ? 'right' : (c.t === 'd' ? 'center' : 'left') };
+        if (c.t === 'n') cell.numFmt = NUM_FMT;
+        if (c.t === 'd' && v instanceof Date) cell.numFmt = 'd-mmm';
+        if (row.type === 'data') {
+          let font = { size:10, color:{argb:T.ink} };
+          if (m.levels.includes(c.k)) font = row.firsts[c.k] ? { size:10, bold:true, color:{argb:T.ink} } : { size:10, color:{argb:T.muted} };
+          if (c.k === 'plm') font.name = 'Consolas';
+          if (c.t === 'd' && typeof v === 'string') font = { size:10, italic:true, color:{argb:T.ok} };
+          if (c.k === 'balfin') { font.bold = true; cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:T.key} }; }
+          if (c.t === 'w') font.color = { argb:'FF595959' };
+          cell.font = font;
+          cell.border = { bottom: hair, top: groupStart ? thinDark : undefined };
+        } else if (row.type === 'sub') {
+          cell.font = { size:10, bold:true, color:{argb:T.navy} };
+          cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb: c.k === 'balfin' ? T.keySub : T.sub} };
+          cell.border = { top: thinNavy, bottom: thinNavy };
+        } else {
+          cell.font = { size:11, bold:true, color:{argb:T.white} };
+          cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:T.navy} };
+        }
+      });
+      xr.height = row.type === 'grand' ? 22 : (row.type === 'sub' ? 19 : 17);
+      r++;
+    }
+    // closure date signals: overdue red, due within 7 days orange (data rows only, keyed on a non-blank PLM cell)
+    const jc = m.xl.col('closure'), pc = m.xl.col('plm'), ref = `${jc}${m.xl.firstData}:${jc}${m.xl.lastData}`, dref = `$${lastCol}$1`, fr = m.xl.firstData;
+    try {
+      ws.addConditionalFormatting({ ref, rules:[
+        { type:'expression', priority:1, formulae:[`AND(ISNUMBER($${jc}${fr}),$${jc}${fr}<${dref},$${pc}${fr}<>"")`], style:{ font:{ bold:true, color:{argb:T.overdue} } } },
+        { type:'expression', priority:2, formulae:[`AND(ISNUMBER($${jc}${fr}),$${jc}${fr}>=${dref},$${jc}${fr}<=${dref}+7,$${pc}${fr}<>"")`], style:{ font:{ bold:true, color:{argb:T.due} } } }
+      ]});
+    } catch(e) {}
+    ws.autoFilter = { from:{row:m.xl.headerRow, column:1}, to:{row:m.xl.grandRow, column:nC} };
+    ws.pageSetup = { orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0, printTitlesRow:'1:3', margins:{ left:0.4, right:0.4, top:0.5, bottom:0.5, header:0.2, footer:0.2 } };
+    ws.headerFooter = { oddFooter:`&L${m.title}&C&P / &N&R${fmtDateLong(reportDate)}` };
+    return ws;
+  }
+
+  function writeDashboard(wb, model){
+    const d = model.dash, P = model.plan, S = model.st6, R = model.rep;
+    const ws = wb.addWorksheet('Dashboard', { views:[{ showGridLines:false }] });
+    ws.columns = [{width:34},{width:14},{width:14},{width:14},{width:14},{width:14},{width:14},{width:14},{width:14}];
+    const q = s => `'${s}'`;
+    const rng = (m, k) => `${q(m.name)}!$${m.xl.col(k)}$${m.xl.firstData}:$${m.xl.col(k)}$${m.xl.lastData}`;
+    const grandRef = (m, k) => `${q(m.name)}!$${m.xl.col(k)}$${m.xl.grandRow}`;
+    const set = (ref, value, opt={}) => { const c = ws.getCell(ref); c.value = value; if (opt.b) c.font = Object.assign({bold:true}, opt.font||{}); else if (opt.font) c.font = opt.font; if (opt.fmt) c.numFmt = opt.fmt; if (opt.fill) c.fill = {type:'pattern',pattern:'solid',fgColor:{argb:opt.fill}}; if (opt.al) c.alignment = opt.al; if (opt.border) c.border = BORDER; return c; };
+    const f = (formula, result) => ({ formula, result });
+    const section = (row, title, src, ncols) => { for (let i = 1; i <= ncols; i++) set(`${colL(i)}${row}`, i === 1 ? title : null, { fill:F_SEC, font:{bold:true,color:{argb:'FFFFFFFF'}} }); set(`${colL(ncols)}${row}`, 'from ' + src, { fill:F_SEC, font:{italic:true,size:9,color:{argb:'FFDDEBF7'}}, al:{horizontal:'right'} }); };
+    const head = (row, labels) => labels.forEach((l, i) => set(`${colL(i+1)}${row}`, l, { b:true, fill:F_HEAD, border:true, al:{horizontal: i ? 'center' : 'left', wrapText:true} }));
+
+    set('A1', 'PRINTING/EMB AFTER WASH - DASHBOARD', { b:true, font:{size:16} });
+    set('A2', 'Report date', { b:true }); set('B2', model.reportDate, { fmt:'d-mmm-yyyy', b:true, al:{horizontal:'left'} });
+    set('D2', 'Every figure below is a formula over the Plan, Printing ST6 and Repair Stitch sheets.', { font:{italic:true, color:{argb:'FF7F7F7F'}} });
+
+    // KPI block
+    let r = 4;
+    const kp = [
+      ['Planned qty (Plan)', f(`${grandRef(P,'planned')}`, d.kpi.planned)],
+      ['Wash sent (Plan)', f(`${grandRef(P,'send')}`, d.kpi.send)],
+      ['Balance finish (Plan)', f(`${grandRef(P,'balfin')}`, d.kpi.balfin)],
+      ['PO lines in Plan', f(`COUNTIFS(${rng(P,'month')},"<>")`, d.kpi.lines)],
+      ['Printing ST6 balance', f(`${grandRef(S,'balfin')}`, d.kpi.st6bal)],
+      ['Repair Stitch balance', f(`${grandRef(R,'balfin')}`, d.kpi.repbal)],
+      ['Overdue lines (closure before report date)', f(`COUNTIFS(${rng(P,'closure')},"<"&$B$2,${rng(P,'balfin')},">0",${rng(P,'month')},"<>")`, d.kpi.overdueN)],
+      ['Overdue qty', f(`SUMIFS(${rng(P,'balfin')},${rng(P,'closure')},"<"&$B$2,${rng(P,'balfin')},">0",${rng(P,'month')},"<>")`, d.kpi.overdueQ)],
+      ['Due in next 7 days (lines)', f(`COUNTIFS(${rng(P,'closure')},">="&$B$2,${rng(P,'closure')},"<="&($B$2+7),${rng(P,'balfin')},">0",${rng(P,'month')},"<>")`, d.kpi.due7N)],
+      ['Due in next 7 days (qty)', f(`SUMIFS(${rng(P,'balfin')},${rng(P,'closure')},">="&$B$2,${rng(P,'closure')},"<="&($B$2+7),${rng(P,'balfin')},">0",${rng(P,'month')},"<>")`, d.kpi.due7Q)],
+    ];
+    section(r, 'KEY FIGURES', 'Plan / Printing ST6 / Repair Stitch', 9); r++;
+    kp.forEach((k, i) => { const row = r + i; set(`A${row}`, k[0], { border:true }); set(`B${row}`, k[1], { fmt:'#,##0', b:true, border:true, fill:F_KPI, al:{horizontal:'right'} }); });
+    r += kp.length + 1;
+
+    // Balance by location x month
+    const nm = d.months.length;
+    section(r, 'BALANCE FINISH BY LOCATION x MONTH', 'Plan', nm + 2); r++;
+    head(r, ['Location', ...d.months, 'Total']); const hdrRow = r; r++;
+    const lm0 = r;
+    d.locMonth.forEach((lr, i) => {
+      const row = r + i; set(`A${row}`, lr.loc, { b:true, border:true });
+      d.months.forEach((m, j) => set(`${colL(j+2)}${row}`, f(`SUMIFS(${rng(P,'balfin')},${rng(P,'loc')},$A${row},${rng(P,'month')},${colL(j+2)}$${hdrRow})`, lr.cells[j]), { fmt:'#,##0', border:true }));
+      set(`${colL(nm+2)}${row}`, f(`SUM(B${row}:${colL(nm+1)}${row})`, lr.total), { fmt:'#,##0', b:true, border:true });
+    });
+    r += d.locMonth.length;
+    set(`A${r}`, 'Total', { b:true, fill:F_GRAND, border:true });
+    for (let j = 0; j < nm + 1; j++) { const cl = colL(j+2); set(`${cl}${r}`, f(`SUM(${cl}${lm0}:${cl}${r-1})`, j < nm ? d.locMonth.reduce((s,x) => s + x.cells[j], 0) : d.kpi.balfin), { fmt:'#,##0', b:true, fill:F_GRAND, border:true }); }
+    try { ws.addConditionalFormatting({ ref:`B${lm0}:${colL(nm+1)}${r-1}`, rules:[{ type:'dataBar', cfvo:[{type:'min'},{type:'max'}], color:{argb:'FF5B9BD5'} }] }); } catch(e) {}
+    r += 2;
+
+    // Process matrix
+    section(r, 'BALANCE FINISH BY PROCESS (LOCATION x PRINTING/EMB x MONTH)', 'Plan', nm + 3); r++;
+    head(r, ['Location', 'Printing/EMB', ...d.months, 'Total']); const ph = r; r++;
+    const pm0 = r;
+    d.procMatrix.forEach((pr, i) => {
+      const row = r + i; set(`A${row}`, pr.loc, { border:true, font: (i === 0 || d.procMatrix[i-1].loc !== pr.loc) ? {bold:true} : {color:{argb:'FF808080'}} }); set(`B${row}`, pr.emb, { border:true });
+      d.months.forEach((m, j) => set(`${colL(j+3)}${row}`, f(`SUMIFS(${rng(P,'balfin')},${rng(P,'loc')},$A${row},${rng(P,'emb')},$B${row},${rng(P,'month')},${colL(j+3)}$${ph})`, pr.cells[j]), { fmt:'#,##0;-#,##0;""', border:true }));
+      set(`${colL(nm+3)}${row}`, f(`SUM(C${row}:${colL(nm+2)}${row})`, pr.total), { fmt:'#,##0', b:true, border:true });
+    });
+    r += d.procMatrix.length;
+    set(`A${r}`, 'Total', { b:true, fill:F_GRAND, border:true }); set(`B${r}`, null, { fill:F_GRAND, border:true });
+    for (let j = 0; j < nm + 1; j++) { const cl = colL(j+3); set(`${cl}${r}`, f(`SUM(${cl}${pm0}:${cl}${r-1})`, j < nm ? d.procMatrix.reduce((s,x) => s + x.cells[j], 0) : d.kpi.balfin), { fmt:'#,##0', b:true, fill:F_GRAND, border:true }); }
+    try { ws.addConditionalFormatting({ ref:`${colL(nm+3)}${pm0}:${colL(nm+3)}${r-1}`, rules:[{ type:'dataBar', cfvo:[{type:'min'},{type:'max'}], color:{argb:'FF5B9BD5'} }] }); } catch(e) {}
+    r += 2;
+
+    // By customer
+    section(r, 'BALANCE FINISH BY CUSTOMER', 'Plan', 5); r++;
+    head(r, ['Customer', 'PO lines', 'Planned qty', 'Wash sent', 'Balance finish']); r++;
+    const bc0 = r;
+    d.byCust.forEach((c, i) => { const row = r + i; set(`A${row}`, c.customer, { border:true });
+      set(`B${row}`, f(`COUNTIFS(${rng(P,'customer')},$A${row})`, c.lines), { fmt:'#,##0', border:true });
+      set(`C${row}`, f(`SUMIFS(${rng(P,'planned')},${rng(P,'customer')},$A${row})`, c.planned), { fmt:'#,##0', border:true });
+      set(`D${row}`, f(`SUMIFS(${rng(P,'send')},${rng(P,'customer')},$A${row})`, c.send), { fmt:'#,##0', border:true });
+      set(`E${row}`, f(`SUMIFS(${rng(P,'balfin')},${rng(P,'customer')},$A${row})`, c.balfin), { fmt:'#,##0', b:true, border:true }); });
+    r += d.byCust.length;
+    set(`A${r}`, 'Total', { b:true, fill:F_GRAND, border:true });
+    ['B','C','D','E'].forEach((cl, j) => set(`${cl}${r}`, f(`SUM(${cl}${bc0}:${cl}${r-1})`, [d.kpi.lines, d.kpi.planned, d.kpi.send, d.kpi.balfin][j]), { fmt:'#,##0', b:true, fill:F_GRAND, border:true }));
+    try { ws.addConditionalFormatting({ ref:`E${bc0}:E${r-1}`, rules:[{ type:'dataBar', cfvo:[{type:'min'},{type:'max'}], color:{argb:'FF5B9BD5'} }] }); } catch(e) {}
+    r += 2;
+
+    // Printing ST6 by month
+    section(r, 'PRINTING ST6 BY MONTH', 'Printing ST6', 5); r++;
+    head(r, ['Month', 'PO lines', 'Planned qty', 'Wash sent', 'Balance finish']); r++;
+    const s0 = r;
+    d.st6ByMonth.forEach((c, i) => { const row = r + i; set(`A${row}`, c.month, { border:true });
+      set(`B${row}`, f(`COUNTIFS(${rng(S,'month')},$A${row})`, c.lines), { fmt:'#,##0', border:true });
+      set(`C${row}`, f(`SUMIFS(${rng(S,'planned')},${rng(S,'month')},$A${row})`, c.planned), { fmt:'#,##0', border:true });
+      set(`D${row}`, f(`SUMIFS(${rng(S,'send')},${rng(S,'month')},$A${row})`, c.send), { fmt:'#,##0', border:true });
+      set(`E${row}`, f(`SUMIFS(${rng(S,'balfin')},${rng(S,'month')},$A${row})`, c.balfin), { fmt:'#,##0', b:true, border:true }); });
+    r += d.st6ByMonth.length;
+    set(`A${r}`, 'Total', { b:true, fill:F_GRAND, border:true });
+    ['B','C','D','E'].forEach((cl, j) => set(`${cl}${r}`, f(`SUM(${cl}${s0}:${cl}${r-1})`, [d.kpi.st6lines, d.st6ByMonth.reduce((s,x)=>s+x.planned,0), d.st6ByMonth.reduce((s,x)=>s+x.send,0), d.kpi.st6bal][j]), { fmt:'#,##0', b:true, fill:F_GRAND, border:true }));
+    r += 2;
+
+    // Repair stitch by customer
+    section(r, 'REPAIR STITCH BY CUSTOMER', 'Repair Stitch', 5); r++;
+    head(r, ['Customer', 'PO lines', 'Planned qty', 'Balance finish', 'Balance to pack']); r++;
+    const r0 = r;
+    d.repByCust.forEach((c, i) => { const row = r + i; set(`A${row}`, c.customer, { border:true });
+      set(`B${row}`, f(`COUNTIFS(${rng(R,'customer')},$A${row})`, c.lines), { fmt:'#,##0', border:true });
+      set(`C${row}`, f(`SUMIFS(${rng(R,'planned')},${rng(R,'customer')},$A${row})`, c.planned), { fmt:'#,##0', border:true });
+      set(`D${row}`, f(`SUMIFS(${rng(R,'balfin')},${rng(R,'customer')},$A${row})`, c.balfin), { fmt:'#,##0', b:true, border:true });
+      set(`E${row}`, f(`SUMIFS(${rng(R,'balpack')},${rng(R,'customer')},$A${row})`, c.balpack), { fmt:'#,##0', border:true }); });
+    r += d.repByCust.length;
+    set(`A${r}`, 'Total', { b:true, fill:F_GRAND, border:true });
+    ['B','C','D','E'].forEach((cl, j) => set(`${cl}${r}`, f(`SUM(${cl}${r0}:${cl}${r-1})`, [d.kpi.replines, d.repByCust.reduce((s,x)=>s+x.planned,0), d.kpi.repbal, d.repByCust.reduce((s,x)=>s+x.balpack,0)][j]), { fmt:'#,##0', b:true, fill:F_GRAND, border:true }));
+    r += 2;
+
+    // Attention list (values, sorted by closure date) - a snapshot, labelled as such
+    section(r, 'CLOSURE DATE WITHIN 7 DAYS OR OVERDUE (snapshot at build time, sorted by closure date)', 'Plan', 8); r++;
+    head(r, ['Customer', 'Location', 'Printing/EMB', 'Style', 'PLM code', 'Closure', 'Balance finish', 'Status']); r++;
+    if (!d.attention.length) { set(`A${r}`, 'Nothing due within 7 days.', { font:{italic:true, color:{argb:'FF7F7F7F'}} }); r++; }
+    d.attention.forEach((g, i) => { const row = r + i; const over = g.closure < model.reportDate;
+      [g.customer, g.loc, g.emb, g.style, g.plm].forEach((v, j) => set(`${colL(j+1)}${row}`, v, { border:true }));
+      set(`F${row}`, g.closure, { fmt:'d-mmm', border:true, al:{horizontal:'center'} }); set(`G${row}`, g.balfin, { fmt:'#,##0', border:true });
+      set(`H${row}`, over ? 'OVERDUE' : 'DUE SOON', { border:true, font:{bold:true, color:{argb: over ? 'FFC00000' : 'FFC55A11'}} }); });
+    r += d.attention.length;
+    return ws;
+  }
+
+  async function exportWorkbook(model){
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'After Wash Planner'; wb.created = new Date();
+    [model.plan, model.st6, model.rep].forEach(layout);
+    writeDashboard(wb, model);            // first tab; formulas point at the sheets below
+    writeSheet(wb, model.plan, model.reportDate);
+    writeSheet(wb, model.st6, model.reportDate);
+    writeSheet(wb, model.rep, model.reportDate);
+    wb.calcProperties = { fullCalcOnLoad: true };
+    return await wb.xlsx.writeBuffer();
+  }
+  function exportFileName(model){ const d = model.reportDate; return `PRINTING-EMB AFTER WASH PLAN ${d.getUTCDate()}-${MON[d.getUTCMonth()].toUpperCase()}.xlsx`; }
+
+  return { readDetail, build, exportWorkbook, exportFileName, fmtDate, fmtDateLong, fmtNum, MON, DAY };
+})();
+/*CORE-END*/
+
+// ================= UI =================
+(function(){
+  const $ = id => document.getElementById(id);
+  const drop = $('drop'), fileIn = $('file'), filelist = $('filelist'), buildBtn = $('buildBtn'), clearBtn = $('clearBtn'), exportBtn = $('exportBtn'), logEl = $('log'), result = $('result');
+  let file = null, buf = null, model = null;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function log(msg, cls){ logEl.style.display = 'block'; const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = msg; logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight; }
+  function fmtSize(n){ return n < 1048576 ? (n/1024).toFixed(0) + ' KB' : (n/1048576).toFixed(1) + ' MB'; }
+
+  // sidebar
+  (function(){ const sh = document.querySelector('.app-shell'); $('sbToggle').onclick = () => sh.classList.add('sb-collapsed'); $('sbOpen').onclick = () => sh.classList.remove('sb-collapsed'); })();
+  function setSidebarCounts(m){ document.querySelectorAll('#sbSheets .sb-item').forEach(el => { const k = el.dataset.sheet; const cnt = el.querySelector('.cnt'); if (!m) { cnt.textContent = ''; el.classList.add('muted'); el.onclick = null; return; } el.classList.remove('muted'); cnt.textContent = k === 'dash' ? '' : m[k].rows.filter(r => r.type === 'data').length; el.onclick = () => { const b = result.querySelector(`.tab[data-tab="${k}"]`); if (b) { b.click(); result.scrollIntoView({behavior:'smooth', block:'start'}); } }; }); }
+
+  function setFile(f){
+    if (!f) return;
+    if (!/\.(xlsx|xlsm)$/i.test(f.name)) { log('Not an Excel workbook: ' + f.name, 'r'); return; }
+    file = f; buf = null; model = null; result.innerHTML = ''; exportBtn.disabled = true; $('exportname').textContent = ''; setSidebarCounts(null);
+    filelist.innerHTML = `<div class="frow"><svg class="i16" viewBox="0 0 16 16"><path d="M9 0H3c-.55 0-1 .45-1 1v14c0 .55.45 1 1 1h10c.55 0 1-.45 1-1V5zm3 14H4V2h4v4h4z"></path></svg><span class="nm">${esc(f.name)}</span><span class="sz">${fmtSize(f.size)}</span><button class="x" title="Remove" id="rmFile"><svg class="i16" viewBox="0 0 16 16"><path d="M9.41 8l3.29-3.29c.19-.18.3-.43.3-.71a1.003 1.003 0 0 0-1.71-.71L8 6.59l-3.29-3.3a1.003 1.003 0 0 0-1.42 1.42L6.59 8 3.3 11.29c-.19.18-.3.43-.3.71a1.003 1.003 0 0 0 1.71.71L8 9.41l3.29 3.29c.18.19.43.3.71.3a1.003 1.003 0 0 0 .71-1.71z"></path></svg></button></div>`;
+    $('rmFile').onclick = (e) => { e.stopPropagation(); clearAll(); };
+    buildBtn.disabled = false; clearBtn.disabled = false;
+    logEl.innerHTML = ''; log('Loaded ' + f.name);
+  }
+  function clearAll(){ file = null; buf = null; model = null; filelist.innerHTML = ''; result.innerHTML = ''; logEl.innerHTML = ''; logEl.style.display = 'none'; buildBtn.disabled = true; clearBtn.disabled = true; exportBtn.disabled = true; $('exportname').textContent = ''; fileIn.value = ''; setSidebarCounts(null); }
+  drop.addEventListener('click', () => fileIn.click());
+  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileIn.click(); } });
+  fileIn.addEventListener('change', () => setFile(fileIn.files[0]));
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', e => setFile(e.dataTransfer.files[0]));
+  clearBtn.onclick = clearAll;
+
+  async function doBuild(){
+    if (!file) return;
+    buildBtn.disabled = true; result.innerHTML = ''; exportBtn.disabled = true;
+    try {
+      if (!buf) buf = new Uint8Array(await file.arrayBuffer());
+      const detail = AWP.readDetail(buf, log);
+      log('Report date: ' + AWP.fmtDateLong(detail.reportDate));
+      model = AWP.build(detail, log);
+      render(model);
+      setSidebarCounts(model);
+      exportBtn.disabled = false; $('exportname').textContent = AWP.exportFileName(model);
+      log('Preview ready. Review the tabs, then export.', 'g');
+    } catch (err) { console.error(err); log('Error: ' + (err && err.message || err), 'r'); }
+    buildBtn.disabled = false;
+  }
+  buildBtn.onclick = doBuild;
+  // headless hook used by tests: window.__awpLoad(Uint8Array, name)
+  window.__awpLoad = async (arr, name) => { setFile({ name: name || 'workbook.xlsx', size: arr.length, arrayBuffer: async () => arr.buffer }); await doBuild(); return model; };
+  window.__awpExport = async () => AWP.exportWorkbook(model);
+
+  exportBtn.onclick = async () => {
+    if (!model) return;
+    exportBtn.disabled = true;
+    try {
+      const out = await AWP.exportWorkbook(model);
+      const blob = new Blob([out], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = AWP.exportFileName(model); document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+      log('Exported ' + a.download, 'g');
+    } catch (err) { console.error(err); log('Export failed: ' + (err && err.message || err), 'r'); }
+    exportBtn.disabled = false;
+  };
+
+  // ---------- rendering ----------
+  const cellHtml = (v, col, row) => {
+    if (col.t === 'n') return `<td class="n${col.k === 'balfin' ? ' key' : ''}">${v == null ? '' : AWP.fmtNum(v)}</td>`;
+    if (col.t === 'd') { let cls = ''; if (row.type === 'data') { if (v instanceof Date) { const rd = model.reportDate; cls = v < rd ? ' late' : (v <= new Date(rd.getTime() + 7*AWP.DAY) ? ' soon' : ''); } else if (v) cls = ' done'; } return `<td class="n mono${cls}">${esc(AWP.fmtDate(v))}</td>`; }
+    if (col.t === 'w') return `<td class="rem" title="${esc(v)}">${esc(v)}</td>`;
+    const isLevel = row.type === 'data' && Object.prototype.hasOwnProperty.call(row.firsts, col.k);
+    const cls = col.k === 'plm' ? 'mono' : '';
+    if (isLevel) return `<td class="${cls} ${row.firsts[col.k] ? 'grp' : 'rep'}">${esc(v)}</td>`;
+    return `<td class="${cls}">${esc(v)}</td>`;
+  };
+  function sheetTable(m, filter){
+    const q = (filter || '').trim().toLowerCase();
+    const rows = q ? m.rows.filter(r => r.type === 'data' && r.cells.some(c => c != null && String(c).toLowerCase().includes(q))) : m.rows;
+    const shown = rows.filter(r => r.type === 'data').length, total = m.rows.filter(r => r.type === 'data').length;
+    let h = `<div class="toolbar"><input type="search" placeholder="Filter rows" data-filter="${esc(m.name)}" value="${esc(filter||'')}"><span class="cnt">${shown} of ${total} lines</span><span class="sheetname" style="margin-left:auto"><svg class="i16" viewBox="0 0 16 16"><path d="M15 1H1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h14c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1M5 13H2v-2h3zm0-3H2V8h3zm0-3H2V5h3zm4 6H6v-2h3zm0-3H6V8h3zm0-3H6V5h3zm5 6h-3v-2h3zm0-3h-3V8h3zm0-3h-3V5h3z"></path></svg>sheet "${esc(m.name)}" / ${esc(m.title)} / ${AWP.fmtDateLong(model.reportDate)}</span></div>`;
+    h += `<div class="tablewrap"><table><thead><tr>${m.cols.map(c => `<th class="${c.t === 'n' || c.t === 'd' ? 'n' : ''}">${esc(c.h)}</th>`).join('')}</tr></thead><tbody>`;
+    if (!rows.length) h += `<tr><td colspan="${m.cols.length}" class="empty">No rows match.</td></tr>`;
+    for (const r of rows) h += `<tr class="${r.type}${r.type === 'data' && r.firsts[m.band] ? ' gs' : ''}">${r.cells.map((v, i) => cellHtml(v, m.cols[i], r)).join('')}</tr>`;
+    return h + '</tbody></table></div>';
+  }
+  function dashHtml(model){
+    const d = model.dash, k = d.kpi, N = AWP.fmtNum;
+    const kpi = (l, v, s, cls='') => `<div class="kpi ${cls}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+    let h = `<div class="pillrow"><span>Source <b>${esc(model.source)}</b> / ${N(model.nDetail)} PO rows</span><span>Report date <b>${AWP.fmtDateLong(model.reportDate)}</b></span><span>Months <b>${d.months.join(', ')}</b></span></div>`;
+    h += '<div class="kpis">' + kpi('Balance finish', N(k.balfin), `${N(k.lines)} lines in Plan`) + kpi('Planned qty', N(k.planned), `wash sent ${N(k.send)}`) + kpi('Printing ST6', N(k.st6bal), `${k.st6lines} lines / balance`) + kpi('Repair Stitch', N(k.repbal), `${k.replines} lines / balance`) + kpi('Overdue', N(k.overdueQ), `${k.overdueN} lines past closure`, k.overdueN ? 'err' : 'ok') + kpi('Due in 7 days', N(k.due7Q), `${k.due7N} lines`, k.due7N ? 'warn' : 'ok') + '</div>';
+    // chart: stacked by location per month
+    const maxM = Math.max(1, ...d.months.map((m, j) => d.locMonth.reduce((s, l) => s + l.cells[j], 0)));
+    const W = 640, H = 200, padL = 52, padB = 26, padT = 14, cw = (W - padL - 10) / Math.max(1, d.months.length);
+    const palette = ['#4c90f0','#32a467','#ec9a3c','#e76a6e','#8abbff'];
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Balance finish by month">`;
+    for (let t = 0; t <= 4; t++) { const y = padT + (H - padT - padB) * (1 - t/4); svg += `<line x1="${padL}" x2="${W-10}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.1)"/><text x="${padL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#abb3bf">${N(Math.round(maxM*t/4))}</text>`; }
+    d.months.forEach((m, j) => { let y0 = H - padB; const x = padL + j*cw + cw*0.2, bw = cw*0.6;
+      d.locMonth.forEach((l, i) => { const v = l.cells[j]; const hh = (H - padT - padB) * v / maxM; y0 -= hh; svg += `<rect x="${x}" y="${y0}" width="${bw}" height="${hh}" fill="${palette[i%palette.length]}" rx="2"><title>${esc(l.loc)} ${m}: ${N(v)}</title></rect>`; });
+      const tot = d.locMonth.reduce((s,l) => s + l.cells[j], 0);
+      svg += `<text x="${x+bw/2}" y="${y0-4}" text-anchor="middle" font-size="10" fill="#f6f7f9">${N(tot)}</text><text x="${x+bw/2}" y="${H-8}" text-anchor="middle" font-size="11" fill="#abb3bf">${m}</text>`; });
+    svg += '</svg>';
+    const tbl = (heads, rows, foot) => `<div class="tablewrap"><table><thead><tr>${heads.map((x,i) => `<th class="${i?'n':''}">${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c,i) => `<td class="${i?'n':''}">${i?N(c):esc(c)}</td>`).join('')}</tr>`).join('')}${foot ? `<tr class="grand">${foot.map((c,i) => `<td class="${i?'n':''}">${i?N(c):esc(c)}</td>`).join('')}</tr>` : ''}</tbody></table></div>`;
+    const sec = (title, src, body, full) => `<div class="dsec ${full?'full':''}"><div class="dh">${title}<span class="src">from ${src}</span></div>${body}</div>`;
+    const maxProc = Math.max(1, ...d.procMatrix.map(x => x.total));
+    h += '<div class="dgrid">';
+    h += sec('Balance finish by month', 'Plan', `<div class="chart">${svg}<div class="lg">${d.locMonth.map((l,i) => `<span><i style="background:${palette[i%palette.length]}"></i>${esc(l.loc)}</span>`).join('')}</div></div>`);
+    h += sec('Balance finish by location and month', 'Plan', tbl(['Location', ...d.months, 'Total'], d.locMonth.map(l => [l.loc, ...l.cells, l.total]), ['Total', ...d.months.map((m,j) => d.locMonth.reduce((s,l) => s + l.cells[j], 0)), k.balfin]));
+    h += sec('Balance finish by process', 'Plan', `<div class="tablewrap"><table><thead><tr><th>Location</th><th>Printing/EMB</th>${d.months.map(m => `<th class="n">${m}</th>`).join('')}<th class="n">Total</th></tr></thead><tbody>${d.procMatrix.map((p,i) => `<tr><td class="${(i===0||d.procMatrix[i-1].loc!==p.loc)?'grp':'rep'}">${esc(p.loc)}</td><td>${esc(p.emb)}</td>${p.cells.map(c => `<td class="n">${c ? N(c) : ''}</td>`).join('')}<td class="n"><span class="bar" style="width:${Math.round(60*p.total/maxProc)}px"></span>${N(p.total)}</td></tr>`).join('')}<tr class="grand"><td>Total</td><td></td>${d.months.map((m,j) => `<td class="n">${N(d.procMatrix.reduce((s,x) => s + x.cells[j], 0))}</td>`).join('')}<td class="n">${N(k.balfin)}</td></tr></tbody></table></div>`, true);
+    h += sec('Balance finish by customer', 'Plan', tbl(['Customer','PO lines','Planned qty','Wash sent','Balance finish'], d.byCust.map(c => [c.customer, c.lines, c.planned, c.send, c.balfin]), ['Total', k.lines, k.planned, k.send, k.balfin]));
+    h += sec('Closure within 7 days or overdue', 'Plan', d.attention.length ? `<div class="tablewrap"><table><thead><tr><th>Customer</th><th>Loc</th><th>Printing/EMB</th><th>PLM code</th><th class="n">Closure</th><th class="n">Balance</th><th>Status</th></tr></thead><tbody>${d.attention.map(g => `<tr><td>${esc(g.customer)}</td><td>${esc(g.loc)}</td><td>${esc(g.emb)}</td><td class="mono">${esc(g.plm)}</td><td class="n mono">${AWP.fmtDate(g.closure)}</td><td class="n">${N(g.balfin)}</td><td><span class="badge ${g.closure < model.reportDate ? 'b-err' : 'b-warn'}">${g.closure < model.reportDate ? 'Overdue' : 'Due soon'}</span></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Nothing due within 7 days.</div>');
+    h += sec('Printing ST6 by month', 'Printing ST6', tbl(['Month','PO lines','Planned qty','Wash sent','Balance finish'], d.st6ByMonth.map(c => [c.month, c.lines, c.planned, c.send, c.balfin]), ['Total', k.st6lines, d.st6ByMonth.reduce((s,x)=>s+x.planned,0), d.st6ByMonth.reduce((s,x)=>s+x.send,0), k.st6bal]));
+    h += sec('Repair Stitch by customer', 'Repair Stitch', tbl(['Customer','PO lines','Planned qty','Balance finish','Balance to pack'], d.repByCust.map(c => [c.customer, c.lines, c.planned, c.balfin, c.balpack]), ['Total', k.replines, d.repByCust.reduce((s,x)=>s+x.planned,0), k.repbal, d.repByCust.reduce((s,x)=>s+x.balpack,0)]));
+    h += '</div>';
+    h += `<div class="note"><svg class="i16" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8m1 12H7V7h2zm0-6H7V4h2z"></path></svg><span>Every dashboard figure is computed from the three sheets in the other tabs, not from DETAIL directly. In the exported workbook the same tables are Excel formulas (SUMIFS / COUNTIFS) over those sheets, so they follow any edit. The "closure within 7 days" list is a values snapshot.</span></div>`;
+    return h;
+  }
+  const filters = {};
+  function render(model){
+    const tabs = [ ['dash','Dashboard', null], ['plan', model.plan.name, model.plan], ['st6', model.st6.name, model.st6], ['rep', model.rep.name, model.rep] ];
+    let h = '<div class="tabs">' + tabs.map((t,i) => `<button class="tab ${i===0?'active':''}" data-tab="${t[0]}">${esc(t[1])}${t[2] ? `<span class="cnt">${t[2].rows.filter(r=>r.type==='data').length}</span>` : ''}</button>`).join('') + '</div>';
+    h += `<div class="pane active" id="pane-dash">${dashHtml(model)}</div>`;
+    for (const t of tabs.slice(1)) h += `<div class="pane" id="pane-${t[0]}">${sheetTable(t[2], filters[t[2].name])}</div>`;
+    result.innerHTML = h;
+    result.querySelectorAll('.tab').forEach(b => b.onclick = () => { result.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === b)); result.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + b.dataset.tab)); });
+    const wire = (inp) => inp.oninput = () => { const name = inp.dataset.filter; filters[name] = inp.value; const m = [model.plan, model.st6, model.rep].find(x => x.name === name); const pane = inp.closest('.pane'); pane.innerHTML = sheetTable(m, inp.value); const ni = pane.querySelector('input'); wire(ni); ni.focus(); ni.setSelectionRange(ni.value.length, ni.value.length); };
+    result.querySelectorAll('input[data-filter]').forEach(wire);
+  }
+})();
+</script>
+</body></html>
